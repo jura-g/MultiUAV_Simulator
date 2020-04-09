@@ -1,0 +1,2 @@
+int32 selectedUAV
+int32 selectedUAV_mode
