@@ -1,0 +1,11 @@
+int32 selectedUAV
+int32 selectedUAV_mode
+float64[] desiredX
+float64[] desiredY
+float64[] desiredZ
+float64[] desiredW		
+---
+float64[]           traj_wp_x
+float64[]           traj_wp_y
+float64[]           traj_wp_z
+float64[]           traj_wp_yaw

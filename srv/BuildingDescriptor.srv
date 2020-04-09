@@ -1,0 +1,12 @@
+float64[]           x
+float64[]           y
+float64             height
+float64             dist
+float64             res
+float64             res_building_points
+float64             res_height
+---
+float64[]           traj_x
+float64[]           traj_y
+float64[]           traj_z
+float64[]           traj_yaw
