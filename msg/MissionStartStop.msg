@@ -1,3 +1,6 @@
 int32 selectedUAV
-bool isActiveFlag
+bool isPositionHoldActiveFlag
+bool isWPActiveFlag
+bool isBuildingTrajectoryActiveFlag
+trajectory_msgs/MultiDOFJointTrajectory multi_dof_trajectory_data
 
