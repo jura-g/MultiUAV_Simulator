@@ -11,11 +11,24 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  trajectory_msgs
+  geometry_msgs
   message_generation
+  mavros
 )
 set(CMAKE_MODULE_PATH /usr/share/cmake/geographiclib/)
 
 find_package(GeographicLib)
+
+# Find Eigen
+find_package(Eigen3)
+if(NOT EIGEN3_FOUND)
+  # Fallback to cmake_modules
+  find_package(cmake_modules REQUIRED)
+  find_package(Eigen REQUIRED)
+  set(EIGEN3_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS})
+  set(EIGEN3_LIBRARIES ${EIGEN_LIBRARIES})
+endif()
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -75,6 +88,8 @@ add_service_files(
 	BuildingDescriptor.srv
 	BuildingTrajectoryParameters.srv
 	GUITrajectoryParameters.srv
+	BuildingTrajectoryParameters_Carrot.srv
+	GUITrajectoryParameters_Carrot.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -88,6 +103,8 @@ add_service_files(
  generate_messages(
    DEPENDENCIES
    std_msgs
+   trajectory_msgs
+   geometry_msgs
  )
 
 ################################################
@@ -122,7 +139,7 @@ add_service_files(
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES graupner_serial
-#  CATKIN_DEPENDS roscpp rospy std_msgs
+  CATKIN_DEPENDS roscpp rospy std_msgs trajectory_msgs geometry_msgs
 #  DEPENDS system_lib
    CATKIN_DEPENDS message_runtime
 #   DEPENDS /usr/lib/x86_64-linux-gnu/libGeographic
@@ -137,6 +154,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
 )
 link_directories(/usr/lib/x86_64-linux-gnu/)
 
@@ -160,8 +178,7 @@ target_link_libraries(serial_graupner ${catkin_LIBRARIES})
 add_dependencies(serial_graupner graupner_serial_gencpp)
 
 add_executable(geographiclib_global2local_service_node nodes/geographiclib_global2local_service_node.cpp src/Geographiclib_globa2local_service.cpp)
-target_link_libraries(geographiclib_global2local_service_node ${catkin_LIBRARIES})
-target_link_libraries(geographiclib_global2local_service_node ${GeographicLib_LIBRARIES})
+target_link_libraries(geographiclib_global2local_service_node ${catkin_LIBRARIES} ${GeographicLib_LIBRARIES})
 add_dependencies(geographiclib_global2local_service_node graupner_serial_gencpp)
 
 ## Rename C++ executable without prefix

@@ -6,7 +6,7 @@ import math, numpy
 #from math import acos
 #from math import hypoth
 
-from spincopter_v1.msg import RCchannelData
+from graupner_serial.msg import RCchannelData
 
 from nav_msgs.msg import Odometry
 

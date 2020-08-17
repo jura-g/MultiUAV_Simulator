@@ -1,7 +1,8 @@
-float64[]         lattitude
+float64[]         latitude
 float64[]         longitude
-float64           lattitude0
+float64           latitude0
 float64           longitude0
+float64           altitude0
 ---
 float64[]         x
 float64[]         y

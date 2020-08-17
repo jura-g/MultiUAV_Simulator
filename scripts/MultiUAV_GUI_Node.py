@@ -1,7 +1,12 @@
 #!/usr/bin/env python
+
+#import faulthandler; faulthandler.enable()
+
 import roslib; roslib.load_manifest('graupner_serial')
 import rospy
 import roslaunch
+
+
 
 import math
 #from math import acos
@@ -17,7 +22,7 @@ from graupner_serial.msg import DesiredTrajectory, MissionWP, MissionStartStop, 
 
 from std_msgs.msg import Empty
 
-from bebop_msgs.msg import CommonCommonStateBatteryStateChanged
+#from bebop_msgs.msg import CommonCommonStateBatteryStateChanged
 
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
@@ -89,9 +94,9 @@ class stick_state(object):
 #    def __init__(self):
 
 
-class app_main(threading.Thread):
+class app_main:
     def __init__(self):
-    	threading.Thread.__init__(self)
+    	#threading.Thread.__init__(self)
 
 	self.number_of_UAVs = 3
 	self.number_of_modes = 6	# [0] - manual mode
@@ -210,7 +215,7 @@ class app_main(threading.Thread):
 	self.lbTELEM_HEADING = [Gtk.Label("0") for x in range(self.number_of_UAVs+1)]
 	self.lbTELEM_HS = [Gtk.Label("0") for x in range(self.number_of_UAVs+1)]
 	self.lbTELEM_VS = [Gtk.Label("0") for x in range(self.number_of_UAVs+1)]
-	self.lbTELEM_BATTERY = [Gtk.Label("0") for x in range(self.number_of_UAVs+1)]
+	self.lbTELEM_BATTERY = [Gtk.Label("0") for x in range(self.number_of_UAVs+1)] 
 	self.pbTELEM_BATTERY = [Gtk.ProgressBar() for x in range(self.number_of_UAVs+1)]
 
 	for x in range(self.number_of_UAVs+1):
@@ -223,8 +228,8 @@ class app_main(threading.Thread):
 		self.lbTELEM_HS[x].set_width_chars(10)
 		self.lbTELEM_VS[x].set_width_chars(10)
 		self.lbTELEM_BATTERY[x].set_width_chars(10)
-		self.pbTELEM_BATTERY[x].set_show_text(True)
-		self.pbTELEM_BATTERY[x].set_size_request(2, -1) 	
+		self.pbTELEM_BATTERY[x].set_show_text(False)
+		self.pbTELEM_BATTERY[x].set_size_request(2, 20) 	
 	for n in range(1, self.number_of_UAVs+1):
 		self.vbox.pack_start(self.hbox[n], True, True, 0)
 		self.hbox[n].pack_start(self.lbTELEM_ID[n], True, True, 0)
@@ -237,7 +242,9 @@ class app_main(threading.Thread):
 		self.hbox[n].pack_start(self.lbTELEM_VS[n], True, True, 0)
 		self.hbox[n].pack_start(self.pbTELEM_BATTERY[n], True, True, 0)
 
+
 	self.window.show_all()
+
 
 #	/* level bar */
 	self.lbS1 = self.builder.get_object('levelbarS1')
@@ -348,18 +355,18 @@ class app_main(threading.Thread):
 	self.bREMOVE_BUILDING_POINT.connect("clicked", self.on_buttonREMOVE_BUILDING_POINT_clicked) 
 
 	self.bREALLAND = self.builder.get_object('buttonREALLAND')
-	self.bREALLAND.connect("clicked", self.on_buttonREALLAND_clicked)
+#	self.bREALLAND.connect("clicked", self.on_buttonREALLAND_clicked)
 	self.bREALTAKEOFF = self.builder.get_object('buttonREALTAKEOFF')
-	self.bREALTAKEOFF.connect("clicked", self.on_buttonREALTAKEOFF_clicked)
+#	self.bREALTAKEOFF.connect("clicked", self.on_buttonREALTAKEOFF_clicked)
 
 	self.R_bCONNECT_UAV1 = self.builder.get_object('R_buttonCONNECT_UAV1')
-	self.R_bCONNECT_UAV1.connect("clicked", self.on_R_buttonCONNECT_UAV1_clicked)
+#	self.R_bCONNECT_UAV1.connect("clicked", self.on_R_buttonCONNECT_UAV1_clicked)
 
 	self.R_bCONNECT_UAV2 = self.builder.get_object('R_buttonCONNECT_UAV2')
-	self.R_bCONNECT_UAV2.connect("clicked", self.on_R_buttonCONNECT_UAV2_clicked)
+#	self.R_bCONNECT_UAV2.connect("clicked", self.on_R_buttonCONNECT_UAV2_clicked)
 
 	self.R_bCONNECT_UAV3 = self.builder.get_object('R_buttonCONNECT_UAV3')
-	self.R_bCONNECT_UAV3.connect("clicked", self.on_R_buttonCONNECT_UAV3_clicked)
+#	self.R_bCONNECT_UAV3.connect("clicked", self.on_R_buttonCONNECT_UAV3_clicked)
 
 #	/* radiobuttons */
 	self.rbPOICW = self.builder.get_object('radiobuttonPOICW')
@@ -458,18 +465,18 @@ class app_main(threading.Thread):
 	self.R_imUAV_1 = self.builder.get_object('R_imageUAV_1')
 	self.R_imUAV_2 = self.builder.get_object('R_imageUAV_2')
 	self.R_imUAV_3 = self.builder.get_object('R_imageUAV_3')
-	self.R_imUAV_1.set_from_file('/home/jura/catkin_ws/src/graupner_serial/scripts/images/off_3.png')    
-	self.R_imUAV_2.set_from_file('/home/jura/catkin_ws/src/graupner_serial/scripts/images/off_3.png')
-	self.R_imUAV_3.set_from_file('/home/jura/catkin_ws/src/graupner_serial/scripts/images/off_3.png')
+	#self.R_imUAV_1.set_from_file('/home/jura/catkin_ws/src/graupner_serial/scripts/images/off_3.png')    
+	#self.R_imUAV_2.set_from_file('/home/jura/catkin_ws/src/graupner_serial/scripts/images/off_3.png')
+	#self.R_imUAV_3.set_from_file('/home/jura/catkin_ws/src/graupner_serial/scripts/images/off_3.png')
 
 #	/* drawing area */
 	self.S_daHEADING = self.builder.get_object('S_drawingareaHEADING')
 	self.R_daHEADING = self.builder.get_object('R_drawingareaHEADING')
 
-	self.arrow_surface_1 = cairo.ImageSurface.create_from_png("/home/jura/catkin_ws/src/graupner_serial/scripts/images/S_arrow_4-100.png")
-	self.arrow_surface_blank_1 = cairo.ImageSurface.create_from_png("/home/jura/catkin_ws/src/graupner_serial/scripts/images/background_XY_4.png")
-	self.arrow_surface_2 = cairo.ImageSurface.create_from_png("/home/jura/catkin_ws/src/graupner_serial/scripts/images/S_arrow_4-100.png")
-	self.arrow_surface_blank_2 = cairo.ImageSurface.create_from_png("/home/jura/catkin_ws/src/graupner_serial/scripts/images/background_N_2.png")
+	self.arrow_surface_1 = cairo.ImageSurface.create_from_png("/home/jura/catkin_ws/src/MultiUAV_Simulator/scripts/images/S_arrow_4-100.png")
+	self.arrow_surface_blank_1 = cairo.ImageSurface.create_from_png("/home/jura/catkin_ws/src/MultiUAV_Simulator/scripts/images/background_XY_4.png")
+	self.arrow_surface_2 = cairo.ImageSurface.create_from_png("/home/jura/catkin_ws/src/MultiUAV_Simulator/scripts/images/S_arrow_4-100.png")
+	self.arrow_surface_blank_2 = cairo.ImageSurface.create_from_png("/home/jura/catkin_ws/src/MultiUAV_Simulator/scripts/images/background_N_2.png")
 	#self.arrow_context_1 = cairo.Context(arrow_surface_1)
 
 	events = (
@@ -509,12 +516,12 @@ class app_main(threading.Thread):
 	rospy.Subscriber(self.UAV_name+"_sim3/odometry_sensor1/odometry", Odometry, self.OdometryCallback, callback_args=3)
 	rospy.Subscriber("BatteryStatusforGUI", BatteryStatus, self.BatteryCallback)
 
-	rospy.Subscriber("bebop_real1/states/common/CommonState/BatteryStateChanged", CommonCommonStateBatteryStateChanged, self.RealBatteryCallback, callback_args=1)
-	rospy.Subscriber("bebop_real2/states/common/CommonState/BatteryStateChanged", CommonCommonStateBatteryStateChanged, self.RealBatteryCallback, callback_args=2)
-	rospy.Subscriber("bebop_real3/states/common/CommonState/BatteryStateChanged", CommonCommonStateBatteryStateChanged, self.RealBatteryCallback, callback_args=3)
-	rospy.Subscriber("bebop_real1/odom", Odometry, self.RealOdometryCallback, callback_args=1)
-	rospy.Subscriber("bebop_real2/odom", Odometry, self.RealOdometryCallback, callback_args=2)
-	rospy.Subscriber("bebop_real3/odom", Odometry, self.RealOdometryCallback, callback_args=3)
+	#rospy.Subscriber("bebop_real1/states/common/CommonState/BatteryStateChanged", CommonCommonStateBatteryStateChanged, self.RealBatteryCallback, callback_args=1)
+	#rospy.Subscriber("bebop_real2/states/common/CommonState/BatteryStateChanged", CommonCommonStateBatteryStateChanged, self.RealBatteryCallback, callback_args=2)
+	#rospy.Subscriber("bebop_real3/states/common/CommonState/BatteryStateChanged", CommonCommonStateBatteryStateChanged, self.RealBatteryCallback, callback_args=3)
+	#rospy.Subscriber("bebop_real1/odom", Odometry, self.RealOdometryCallback, callback_args=1)
+	#rospy.Subscriber("bebop_real2/odom", Odometry, self.RealOdometryCallback, callback_args=2)
+	#rospy.Subscriber("bebop_real3/odom", Odometry, self.RealOdometryCallback, callback_args=3)
 	#rospy.Subscriber("/bebop/image_raw",Image,ImageCallback)
 
 	self.request_TrajectoryPlanningService = rospy.ServiceProxy('TrajectoryPlanningService', BuildingTrajectoryParameters)
@@ -1130,21 +1137,21 @@ class app_main(threading.Thread):
 	self.W_cur_orientation[1][UAV_ID] = math.atan2(2.0 * (data.pose.pose.orientation.w * data.pose.pose.orientation.z + data.pose.pose.orientation.x * data.pose.pose.orientation.y), 1.0 - 2.0 * (data.pose.pose.orientation.y * data.pose.pose.orientation.y + data.pose.pose.orientation.z * data.pose.pose.orientation.z))
  
 #/* REAL UAV LAND handlers */
-    def on_buttonREALLAND_clicked(self, button):
+#    def on_buttonREALLAND_clicked(self, button):
 
-	real_uav_land_pub = rospy.Publisher('bebop_real'+str(self.selected_UAV)+'/land', Empty, queue_size=10)
-	real_uav_land_pub.publish(Empty())
+#	real_uav_land_pub = rospy.Publisher('bebop_real'+str(self.selected_UAV)+'/land', Empty, queue_size=10)
+#	real_uav_land_pub.publish(Empty())
 
 #/* REAL UAV TAKE-OFF handlers */
-    def on_buttonREALTAKEOFF_clicked(self, button):
+#    def on_buttonREALTAKEOFF_clicked(self, button):
 
-	real_uav_takeoff_pub = rospy.Publisher('bebop_real'+str(self.selected_UAV)+'/takeoff', Empty, queue_size=10)
-	real_uav_takeoff_pub.publish(Empty())		
+#	real_uav_takeoff_pub = rospy.Publisher('bebop_real'+str(self.selected_UAV)+'/takeoff', Empty, queue_size=10)
+#	real_uav_takeoff_pub.publish(Empty())		
 
 #/* REAL UAV BATTERY handlers */
-    def RealBatteryCallback(self, data, UAV_ID):
+#    def RealBatteryCallback(self, data, UAV_ID):
 
-	self.R_UAV_batt_data[UAV_ID] = data.percent
+#	self.R_UAV_batt_data[UAV_ID] = data.percent
 
 	#pb2.set_fraction(data.percent/100.0)
 
@@ -1189,34 +1196,34 @@ class app_main(threading.Thread):
 	cr.paint()
 
 #/* REAL UAV CONTORL handlers */
-    def on_R_buttonCONNECT_UAV1_clicked(self, button):
+#    def on_R_buttonCONNECT_UAV1_clicked(self, button):
 
-	uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
-	roslaunch.configure_logging(uuid)
-	launch = roslaunch.parent.ROSLaunchParent(uuid, ['/home/jura/catkin_ws/src/bebop_autonomy/bebop_driver/launch/bebop_node_UAV1.launch'])
-	launch.start()
+#	uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+#	roslaunch.configure_logging(uuid)
+#	launch = roslaunch.parent.ROSLaunchParent(uuid, ['/home/jura/catkin_ws/src/bebop_autonomy/bebop_driver/launch/bebop_node_UAV1.launch'])
+#	launch.start()
 
-	self.R_imUAV_1.set_from_file('/home/jura/catkin_ws/src/graupner_serial/scripts/images/on_3.png')
-
-
-    def on_R_buttonCONNECT_UAV2_clicked(self, button):
-
-	uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
-	roslaunch.configure_logging(uuid)
-	launch = roslaunch.parent.ROSLaunchParent(uuid, ['/home/jura/catkin_ws/src/bebop_autonomy/bebop_driver/launch/bebop_node_UAV2.launch'])
-	launch.start()
-
-	self.R_imUAV_2.set_from_file('/home/jura/catkin_ws/src/graupner_serial/scripts/images/on_3.png')
+#	self.R_imUAV_1.set_from_file('/home/jura/catkin_ws/src/graupner_serial/scripts/images/on_3.png')
 
 
-    def on_R_buttonCONNECT_UAV3_clicked(self, button):
+#    def on_R_buttonCONNECT_UAV2_clicked(self, button):
 
-	uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
-	roslaunch.configure_logging(uuid)
-	launch = roslaunch.parent.ROSLaunchParent(uuid, ['/home/jura/catkin_ws/src/bebop_autonomy/bebop_driver/launch/bebop_node_UAV3.launch'])
-	launch.start()
+#	uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+#	roslaunch.configure_logging(uuid)
+#	launch = roslaunch.parent.ROSLaunchParent(uuid, ['/home/jura/catkin_ws/src/bebop_autonomy/bebop_driver/launch/bebop_node_UAV2.launch'])
+#	launch.start()
 
-	self.R_imUAV_3.set_from_file('/home/jura/catkin_ws/src/graupner_serial/scripts/images/on_3.png')
+#	self.R_imUAV_2.set_from_file('/home/jura/catkin_ws/src/graupner_serial/scripts/images/on_3.png')
+
+
+#    def on_R_buttonCONNECT_UAV3_clicked(self, button):
+
+#	uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+#	roslaunch.configure_logging(uuid)
+#	launch = roslaunch.parent.ROSLaunchParent(uuid, ['/home/jura/catkin_ws/src/bebop_autonomy/bebop_driver/launch/bebop_node_UAV3.launch'])
+#	launch.start()
+
+#	self.R_imUAV_3.set_from_file('/home/jura/catkin_ws/src/graupner_serial/scripts/images/on_3.png')
 
 #def ImageCallback(data):
 #
@@ -1385,22 +1392,26 @@ class app_main(threading.Thread):
 			msgDesTra.desiredW = self.W_cur_orientation[0][n]
 
 			desired_tra_pub.publish(msgDesTra)
+	return 1
 
-class GUIappGTK(threading.Thread):
+#class GUIappGTK(threading.Thread):
     
-    def run(self):
-        Gtk.main()
+    #def run(self):
+       #Gtk.main()
 
 #___________________________________________________
 
 
 if __name__ == "__main__":
-    GUIapplicationROS = app_main()
-    GUIapplicationGTK = GUIappGTK()
-    GUIapplicationROS.daemon = True
-    GUIapplicationROS.start()
-    GUIapplicationGTK.start()
-    while not rospy.is_shutdown():
-	GLib.idle_add(GUIapplicationROS.run)
-	time.sleep(0.1)
+    GUIapplication = app_main()
+    #GUIapplicationROS = app_main()
+    #GUIapplicationGTK = GUIappGTK()
+    #GUIapplicationROS.daemon = True
+    #GUIapplicationROS.start()
+    #GUIapplicationGTK.start()
+    GLib.timeout_add(10, GUIapplication.run)
+    Gtk.main()
+    #while not rospy.is_shutdown():
+	#GLib.idle_add(GUIapplicationROS.run)
+	#time.sleep(0.1)
 

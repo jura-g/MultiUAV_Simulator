@@ -12,6 +12,8 @@ from nav_msgs.msg import Odometry
 
 from graupner_serial.msg import DesiredTrajectory, MissionWP, MissionStartStop
 
+from graupner_serial.srv import GUITrajectoryParameters
+
 #from mav_msgs import msgMultiDofJointTrajectoryFromPositionYaw
 
 import uinput, time
@@ -50,6 +52,13 @@ class MissionControl:
 	self.Z_cur_position = [[0 for x in range(self.number_of_UAVs+1)] for y in range(2)]
 	self.W_cur_orientation = [[0 for x in range(self.number_of_UAVs+1)] for y in range(2)]
 
+	self.UAV_mode = [[1 for x in range(self.number_of_UAVs+1)] for y in range(2)]
+
+	self.desiredX = [0.0 for x in range(90)]
+	self.desiredY = [0.0 for x in range(90)]
+	self.desiredZ = [0.0 for x in range(90)]
+	self.desiredW = [0.0 for x in range(90)]
+
 	self.UAV_name = rospy.get_param('uav_name_param')
 	rospy.Subscriber(self.UAV_name+"_sim1/odometry_sensor1/odometry", Odometry, self.OdometryCallback, callback_args=1)
 	rospy.Subscriber(self.UAV_name+"_sim2/odometry_sensor1/odometry", Odometry, self.OdometryCallback, callback_args=2)
@@ -57,6 +66,10 @@ class MissionControl:
 
 	rospy.Subscriber("MissionfromGUI", MissionWP, self.MissionWPCallback)
 	rospy.Subscriber("MissionStartStop", MissionStartStop, self.StartStopCallback)
+
+	self.request_TrajectoryFromGUIService = rospy.ServiceProxy('TrajectoryFromGUIService', GUITrajectoryParameters)
+
+	print("MCN initialization")
 
 
     def run(self):
@@ -103,38 +116,67 @@ class MissionControl:
 
 	if (self.next_WP[UAV_ID] == 0) and (not self.mission_started):
 		
-		desired_tra_pub = rospy.Publisher(self.UAV_name+'_sim'+str(UAV_ID)+'/DesiredTrajectoryfromGUI', DesiredTrajectory, queue_size=10)
+		#desired_tra_pub = rospy.Publisher(self.UAV_name+'_sim'+str(UAV_ID)+'/DesiredTrajectoryfromGUI', DesiredTrajectory, queue_size=10)
 
-		msgDesTra = DesiredTrajectory()
-		msgDesTra.desiredX = self.WP_X[UAV_ID][0]
-		msgDesTra.desiredY = self.WP_Y[UAV_ID][0]
-		msgDesTra.desiredZ = self.WP_Z[UAV_ID][0]
-		msgDesTra.desiredW = self.WP_W[UAV_ID][0]
-		desired_tra_pub.publish(msgDesTra)
+		#msgDesTra = DesiredTrajectory()
+		#msgDesTra.desiredX = self.WP_X[UAV_ID][0]
+		#msgDesTra.desiredY = self.WP_Y[UAV_ID][0]
+		#msgDesTra.desiredZ = self.WP_Z[UAV_ID][0]
+		#msgDesTra.desiredW = self.WP_W[UAV_ID][0]
+		#desired_tra_pub.publish(msgDesTra)
+
+		self.UAV_mode[0][UAV_ID] = 1
+
+		self.desiredX[0] = self.X_cur_position[0][UAV_ID]
+		self.desiredY[0] = self.Y_cur_position[0][UAV_ID]
+		self.desiredZ[0] = self.Z_cur_position[0][UAV_ID]
+		self.desiredW[0] = self.W_cur_orientation[0][UAV_ID]
+		self.desiredX[1] = self.WP_X[UAV_ID][0]
+		self.desiredY[1] = self.WP_Y[UAV_ID][0]
+		self.desiredZ[1] = self.WP_Z[UAV_ID][0]
+		self.desiredW[1] = self.WP_W[UAV_ID][0]
+
+		resp = self.request_TrajectoryFromGUIService(UAV_ID, self.UAV_mode[0][UAV_ID], self.desiredX, self.desiredY, self.desiredZ, self.desiredW)
 	
 		self.Flight[UAV_ID] = True
 		self.mission_started = True
+		print("MCN test 1")
 	
 
 	if ((self.Flight[UAV_ID]) and (math.hypot((self.WP_X[UAV_ID][self.next_WP[UAV_ID]]-self.X_cur_position[0][UAV_ID]),(self.WP_Y[UAV_ID][self.next_WP[UAV_ID]]-self.Y_cur_position[0][UAV_ID])) < 0.2)):
 		self.start_LT[UAV_ID] = rospy.get_time()
 		self.Loiter[UAV_ID] = True
 		self.Flight[UAV_ID] = False
+		print("MCN test 2")
 
 
 	if ((self.Loiter[UAV_ID]) and (rospy.get_time() - self.start_LT[UAV_ID] > self.WP_LT[UAV_ID][self.next_WP[UAV_ID]]) and (self.next_WP[UAV_ID] + 2 <= self.number_of_WPs[UAV_ID])): 
 		self.Loiter[UAV_ID] = False
 		self.Flight[UAV_ID] = True
 		self.next_WP[UAV_ID] = self.next_WP[UAV_ID] + 1
+		print("MCN test 3")
 
-		desired_tra_pub = rospy.Publisher(self.UAV_name+'_sim'+str(UAV_ID)+'/DesiredTrajectoryfromGUI', DesiredTrajectory, queue_size=10)
+		#desired_tra_pub = rospy.Publisher(self.UAV_name+'_sim'+str(UAV_ID)+'/DesiredTrajectoryfromGUI', DesiredTrajectory, queue_size=10)
 
-		msgDesTra = DesiredTrajectory()
-		msgDesTra.desiredX = self.WP_X[UAV_ID][self.next_WP[UAV_ID]]
-		msgDesTra.desiredY = self.WP_Y[UAV_ID][self.next_WP[UAV_ID]]
-		msgDesTra.desiredZ = self.WP_Z[UAV_ID][self.next_WP[UAV_ID]]
-		msgDesTra.desiredW = self.WP_W[UAV_ID][self.next_WP[UAV_ID]]
-		desired_tra_pub.publish(msgDesTra)	
+		#msgDesTra = DesiredTrajectory()
+		#msgDesTra.desiredX = self.WP_X[UAV_ID][self.next_WP[UAV_ID]]
+		#msgDesTra.desiredY = self.WP_Y[UAV_ID][self.next_WP[UAV_ID]]
+		#msgDesTra.desiredZ = self.WP_Z[UAV_ID][self.next_WP[UAV_ID]]
+		#msgDesTra.desiredW = self.WP_W[UAV_ID][self.next_WP[UAV_ID]]
+		#desired_tra_pub.publish(msgDesTra)
+
+		self.UAV_mode[0][UAV_ID] = 1
+
+		self.desiredX[0] = self.X_cur_position[0][UAV_ID]
+		self.desiredY[0] = self.Y_cur_position[0][UAV_ID]
+		self.desiredZ[0] = self.Z_cur_position[0][UAV_ID]
+		self.desiredW[0] = self.W_cur_orientation[0][UAV_ID]
+		self.desiredX[1] = self.WP_X[UAV_ID][self.next_WP[UAV_ID]]
+		self.desiredY[1] = self.WP_Y[UAV_ID][self.next_WP[UAV_ID]]
+		self.desiredZ[1] = self.WP_Z[UAV_ID][self.next_WP[UAV_ID]]
+		self.desiredW[1] = self.WP_W[UAV_ID][self.next_WP[UAV_ID]]
+
+		resp = self.request_TrajectoryFromGUIService(UAV_ID, self.UAV_mode[0][UAV_ID], self.desiredX, self.desiredY, self.desiredZ, self.desiredW)	
 				
 
 if __name__ == "__main__":

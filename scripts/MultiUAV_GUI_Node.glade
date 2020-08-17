@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.18.3 -->
+<!-- Generated with glade 3.36.0 -->
 <interface>
   <requires lib="gtk+" version="3.12"/>
   <object class="GtkListStore" id="liststore1"/>
@@ -7,7 +7,7 @@
   <object class="GtkListStore" id="liststore3"/>
   <object class="GtkListStore" id="liststore4"/>
   <object class="GtkWindow" id="window1">
-    <property name="width_request">1060</property>
+    <property name="width_request">900</property>
     <property name="height_request">800</property>
     <property name="can_focus">False</property>
     <signal name="delete-event" handler="onDeleteWindow" swapped="no"/>
@@ -23,12 +23,11 @@
           <object class="GtkFrame" id="frame2">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="margin_left">10</property>
             <property name="margin_top">10</property>
             <property name="label_xalign">0</property>
             <child>
               <object class="GtkAlignment" id="alignment2">
-                <property name="width_request">500</property>
+                <property name="width_request">300</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="left_padding">12</property>
@@ -42,13 +41,13 @@
                       <object class="GtkBox" id="box5">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="spacing">15</property>
+                        <property name="spacing">2</property>
                         <property name="homogeneous">True</property>
                         <child>
                           <object class="GtkFrame" id="frame43">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="margin_top">10</property>
+                            <property name="margin_top">2</property>
                             <property name="label_xalign">0</property>
                             <child>
                               <object class="GtkAlignment" id="alignment42">
@@ -59,6 +58,7 @@
                                   <object class="GtkBox" id="box120">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
+                                    <property name="halign">center</property>
                                     <property name="orientation">vertical</property>
                                     <child>
                                       <object class="GtkLabel" id="label178">
@@ -113,7 +113,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="valign">center</property>
-                            <property name="margin_top">10</property>
+                            <property name="margin_top">2</property>
                             <property name="label_xalign">0</property>
                             <child>
                               <object class="GtkAlignment" id="alignment4">
@@ -121,7 +121,7 @@
                                 <property name="can_focus">False</property>
                                 <child>
                                   <object class="GtkBox" id="box119">
-                                    <property name="width_request">320</property>
+                                    <property name="width_request">150</property>
                                     <property name="height_request">110</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
@@ -148,12 +148,14 @@
                                         <property name="height_request">50</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
-                                        <property name="column_homogeneous">True</property>
+                                        <property name="halign">center</property>
                                         <child>
                                           <object class="GtkLabel" id="label9">
                                             <property name="height_request">20</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
+                                            <property name="halign">center</property>
+                                            <property name="margin_end">5</property>
                                             <property name="label" translatable="yes">UAV 1</property>
                                           </object>
                                           <packing>
@@ -166,6 +168,7 @@
                                             <property name="height_request">20</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
+                                            <property name="halign">center</property>
                                             <property name="label" translatable="yes">UAV 2</property>
                                           </object>
                                           <packing>
@@ -178,6 +181,8 @@
                                             <property name="height_request">20</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
+                                            <property name="halign">center</property>
+                                            <property name="margin_start">5</property>
                                             <property name="label" translatable="yes">UAV 3</property>
                                           </object>
                                           <packing>
@@ -187,12 +192,13 @@
                                         </child>
                                         <child>
                                           <object class="GtkLevelBar" id="levelbar5">
-                                            <property name="width_request">70</property>
+                                            <property name="width_request">20</property>
                                             <property name="height_request">20</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="halign">center</property>
                                             <property name="valign">center</property>
+                                            <property name="margin_end">5</property>
                                           </object>
                                           <packing>
                                             <property name="left_attach">0</property>
@@ -201,7 +207,7 @@
                                         </child>
                                         <child>
                                           <object class="GtkLevelBar" id="levelbar6">
-                                            <property name="width_request">70</property>
+                                            <property name="width_request">20</property>
                                             <property name="height_request">20</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
@@ -215,12 +221,13 @@
                                         </child>
                                         <child>
                                           <object class="GtkLevelBar" id="levelbar7">
-                                            <property name="width_request">70</property>
+                                            <property name="width_request">20</property>
                                             <property name="height_request">20</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="halign">center</property>
                                             <property name="valign">center</property>
+                                            <property name="margin_start">5</property>
                                           </object>
                                           <packing>
                                             <property name="left_attach">2</property>
@@ -268,8 +275,8 @@
                               <object class="GtkFrame" id="frame25">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="margin_left">10</property>
-                                <property name="margin_right">10</property>
+                                <property name="margin_start">10</property>
+                                <property name="margin_end">10</property>
                                 <property name="margin_top">10</property>
                                 <property name="label_xalign">0</property>
                                 <child>
@@ -297,8 +304,8 @@
                                         </child>
                                         <child>
                                           <object class="GtkProgressBar" id="progressbar1">
-                                            <property name="width_request">600</property>
-                                            <property name="height_request">20</property>
+                                            <property name="width_request">400</property>
+                                            <property name="height_request">50</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="halign">center</property>
@@ -331,8 +338,8 @@
                               <object class="GtkFrame" id="frame30">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="margin_left">10</property>
-                                <property name="margin_right">10</property>
+                                <property name="margin_start">10</property>
+                                <property name="margin_end">10</property>
                                 <property name="margin_top">10</property>
                                 <property name="margin_bottom">30</property>
                                 <property name="label_xalign">0</property>
@@ -349,8 +356,7 @@
                                         <property name="margin_bottom">30</property>
                                         <child>
                                           <object class="GtkGrid" id="grid1">
-                                            <property name="width_request">480</property>
-                                            <property name="height_request">450</property>
+                                            <property name="height_request">250</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="halign">center</property>
@@ -362,6 +368,7 @@
                                               <object class="GtkLabel" id="label4">
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">False</property>
+                                                <property name="halign">center</property>
                                                 <property name="label" translatable="yes">THROTTLE</property>
                                                 <property name="yalign">0.49000000953674316</property>
                                               </object>
@@ -374,6 +381,7 @@
                                               <object class="GtkLabel" id="label5">
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">False</property>
+                                                <property name="halign">center</property>
                                                 <property name="label" translatable="yes">YAW</property>
                                               </object>
                                               <packing>
@@ -385,6 +393,7 @@
                                               <object class="GtkLabel" id="label6">
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">False</property>
+                                                <property name="halign">center</property>
                                                 <property name="label" translatable="yes">PITCH</property>
                                               </object>
                                               <packing>
@@ -396,6 +405,7 @@
                                               <object class="GtkLabel" id="label7">
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">False</property>
+                                                <property name="halign">center</property>
                                                 <property name="label" translatable="yes">ROLL</property>
                                               </object>
                                               <packing>
@@ -405,8 +415,6 @@
                                             </child>
                                             <child>
                                               <object class="GtkLevelBar" id="levelbarS1">
-                                                <property name="width_request">20</property>
-                                                <property name="height_request">200</property>
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">False</property>
                                                 <property name="halign">center</property>
@@ -426,11 +434,10 @@
                                               <object class="GtkBox" id="box19">
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">False</property>
+                                                <property name="halign">center</property>
                                                 <property name="orientation">vertical</property>
                                                 <child>
                                                   <object class="GtkLevelBar" id="levelbarS3_1">
-                                                    <property name="width_request">20</property>
-                                                    <property name="height_request">100</property>
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
                                                     <property name="halign">center</property>
@@ -449,8 +456,6 @@
                                                 </child>
                                                 <child>
                                                   <object class="GtkLevelBar" id="levelbarS3_2">
-                                                    <property name="width_request">20</property>
-                                                    <property name="height_request">100</property>
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
                                                     <property name="halign">center</property>
@@ -480,8 +485,8 @@
                                                 <property name="valign">center</property>
                                                 <child>
                                                   <object class="GtkLevelBar" id="levelbarS2_1">
-                                                    <property name="width_request">100</property>
-                                                    <property name="height_request">20</property>
+                                                    <property name="width_request">2</property>
+                                                    <property name="height_request">2</property>
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
                                                     <property name="halign">center</property>
@@ -499,8 +504,6 @@
                                                 </child>
                                                 <child>
                                                   <object class="GtkLevelBar" id="levelbarS2_2">
-                                                    <property name="width_request">100</property>
-                                                    <property name="height_request">20</property>
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
                                                     <property name="halign">center</property>
@@ -529,8 +532,6 @@
                                                 <property name="valign">center</property>
                                                 <child>
                                                   <object class="GtkLevelBar" id="levelbarS4_1">
-                                                    <property name="width_request">100</property>
-                                                    <property name="height_request">20</property>
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
                                                     <property name="halign">center</property>
@@ -548,8 +549,6 @@
                                                 </child>
                                                 <child>
                                                   <object class="GtkLevelBar" id="levelbarS4_2">
-                                                    <property name="width_request">100</property>
-                                                    <property name="height_request">20</property>
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
                                                     <property name="halign">center</property>
@@ -585,7 +584,7 @@
                                             <property name="orientation">vertical</property>
                                             <child>
                                               <object class="GtkGrid" id="grid6">
-                                                <property name="width_request">320</property>
+                                                <property name="width_request">200</property>
                                                 <property name="height_request">300</property>
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">False</property>
@@ -605,7 +604,7 @@
                                                         <property name="left_padding">12</property>
                                                         <child>
                                                           <object class="GtkLabel" id="label85">
-                                                            <property name="width_request">160</property>
+                                                            <property name="width_request">80</property>
                                                             <property name="visible">True</property>
                                                             <property name="can_focus">False</property>
                                                             <property name="label" translatable="yes">MODE</property>
@@ -960,26 +959,29 @@
                               <object class="GtkFrame" id="frame26">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="margin_left">10</property>
-                                <property name="margin_right">10</property>
+                                <property name="margin_start">10</property>
+                                <property name="margin_end">10</property>
                                 <property name="label_xalign">0</property>
                                 <child>
                                   <object class="GtkAlignment" id="alignment26">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
+                                    <property name="halign">center</property>
                                     <property name="left_padding">12</property>
                                     <property name="right_padding">12</property>
                                     <child>
                                       <object class="GtkBox" id="box47">
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
+                                        <property name="halign">center</property>
                                         <property name="margin_top">5</property>
                                         <property name="margin_bottom">5</property>
-                                        <property name="spacing">10</property>
+                                        <property name="spacing">25</property>
                                         <child>
                                           <object class="GtkLabel" id="label2">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
+                                            <property name="halign">center</property>
                                             <property name="label" translatable="yes">UAV ID</property>
                                             <property name="width_chars">10</property>
                                           </object>
@@ -993,6 +995,7 @@
                                           <object class="GtkLabel" id="label3">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
+                                            <property name="halign">center</property>
                                             <property name="label" translatable="yes">MODE</property>
                                             <property name="width_chars">10</property>
                                           </object>
@@ -1006,6 +1009,7 @@
                                           <object class="GtkLabel" id="label16">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
+                                            <property name="halign">center</property>
                                             <property name="label" translatable="yes">X</property>
                                             <property name="width_chars">10</property>
                                           </object>
@@ -1019,6 +1023,7 @@
                                           <object class="GtkLabel" id="label17">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
+                                            <property name="halign">center</property>
                                             <property name="label" translatable="yes">Y</property>
                                             <property name="width_chars">10</property>
                                           </object>
@@ -1032,6 +1037,7 @@
                                           <object class="GtkLabel" id="label68">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
+                                            <property name="halign">center</property>
                                             <property name="label" translatable="yes">Z</property>
                                             <property name="width_chars">10</property>
                                           </object>
@@ -1045,6 +1051,7 @@
                                           <object class="GtkLabel" id="label69">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
+                                            <property name="halign">center</property>
                                             <property name="label" translatable="yes">HEADING</property>
                                             <property name="width_chars">10</property>
                                           </object>
@@ -1058,6 +1065,7 @@
                                           <object class="GtkLabel" id="label70">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
+                                            <property name="halign">center</property>
                                             <property name="label" translatable="yes">H. S.</property>
                                             <property name="width_chars">10</property>
                                           </object>
@@ -1071,6 +1079,7 @@
                                           <object class="GtkLabel" id="label71">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
+                                            <property name="halign">center</property>
                                             <property name="label" translatable="yes">V. S.</property>
                                             <property name="width_chars">10</property>
                                           </object>
@@ -1089,7 +1098,7 @@
                                             <property name="justify">center</property>
                                             <property name="ellipsize">end</property>
                                             <property name="width_chars">20</property>
-                                            <property name="xalign">0.60000002384185791</property>
+                                            <property name="xalign">0.6000000238418579</property>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
@@ -1115,8 +1124,8 @@
                               <object class="GtkFrame" id="frame23">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="margin_left">10</property>
-                                <property name="margin_right">10</property>
+                                <property name="margin_start">10</property>
+                                <property name="margin_end">10</property>
                                 <property name="label_xalign">0</property>
                                 <child>
                                   <object class="GtkAlignment" id="alignment23">
@@ -1145,7 +1154,7 @@
                         </child>
                         <child type="tab">
                           <object class="GtkLabel" id="label74">
-                            <property name="width_request">450</property>
+                            <property name="width_request">200</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="label" translatable="yes">SIMULATED SYSTEM</property>
@@ -1163,8 +1172,8 @@
                               <object class="GtkFrame" id="frame28">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="margin_left">10</property>
-                                <property name="margin_right">10</property>
+                                <property name="margin_start">10</property>
+                                <property name="margin_end">10</property>
                                 <property name="margin_top">10</property>
                                 <property name="label_xalign">0</property>
                                 <child>
@@ -1192,7 +1201,7 @@
                                         </child>
                                         <child>
                                           <object class="GtkProgressBar" id="progressbar2">
-                                            <property name="width_request">600</property>
+                                            <property name="width_request">200</property>
                                             <property name="height_request">20</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
@@ -1226,8 +1235,8 @@
                               <object class="GtkFrame" id="frame29">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="margin_left">10</property>
-                                <property name="margin_right">10</property>
+                                <property name="margin_start">10</property>
+                                <property name="margin_end">10</property>
                                 <property name="margin_top">10</property>
                                 <property name="margin_bottom">30</property>
                                 <property name="label_xalign">0</property>
@@ -1244,7 +1253,7 @@
                                         <property name="margin_bottom">30</property>
                                         <child>
                                           <object class="GtkGrid" id="grid7">
-                                            <property name="width_request">480</property>
+                                            <property name="width_request">200</property>
                                             <property name="height_request">450</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
@@ -1375,7 +1384,7 @@
                                                 <property name="valign">center</property>
                                                 <child>
                                                   <object class="GtkLevelBar" id="levelbarR2_1">
-                                                    <property name="width_request">100</property>
+                                                    <property name="width_request">50</property>
                                                     <property name="height_request">20</property>
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
@@ -1394,7 +1403,7 @@
                                                 </child>
                                                 <child>
                                                   <object class="GtkLevelBar" id="levelbarR2_2">
-                                                    <property name="width_request">100</property>
+                                                    <property name="width_request">50</property>
                                                     <property name="height_request">20</property>
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
@@ -1424,7 +1433,7 @@
                                                 <property name="valign">center</property>
                                                 <child>
                                                   <object class="GtkLevelBar" id="levelbarR4_1">
-                                                    <property name="width_request">100</property>
+                                                    <property name="width_request">50</property>
                                                     <property name="height_request">20</property>
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
@@ -1443,7 +1452,7 @@
                                                 </child>
                                                 <child>
                                                   <object class="GtkLevelBar" id="levelbarR4_2">
-                                                    <property name="width_request">100</property>
+                                                    <property name="width_request">50</property>
                                                     <property name="height_request">20</property>
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
@@ -1469,7 +1478,7 @@
                                               <object class="GtkBox" id="box101">
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">False</property>
-                                                <property name="margin_left">17</property>
+                                                <property name="margin_start">17</property>
                                                 <child>
                                                   <placeholder/>
                                                 </child>
@@ -1486,7 +1495,7 @@
                                               <object class="GtkBox" id="box100">
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">False</property>
-                                                <property name="margin_left">17</property>
+                                                <property name="margin_start">17</property>
                                                 <child>
                                                   <placeholder/>
                                                 </child>
@@ -1503,7 +1512,6 @@
                                               <object class="GtkBox" id="box99">
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">False</property>
-                                                <property name="margin_left">17</property>
                                                 <child>
                                                   <placeholder/>
                                                 </child>
@@ -1540,7 +1548,7 @@
                                             <property name="orientation">vertical</property>
                                             <child>
                                               <object class="GtkGrid" id="grid8">
-                                                <property name="width_request">320</property>
+                                                <property name="width_request">200</property>
                                                 <property name="height_request">300</property>
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">False</property>
@@ -1913,8 +1921,8 @@
                               <object class="GtkFrame" id="frame59">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="margin_left">10</property>
-                                <property name="margin_right">10</property>
+                                <property name="margin_start">10</property>
+                                <property name="margin_end">10</property>
                                 <property name="label_xalign">0</property>
                                 <child>
                                   <object class="GtkAlignment" id="alignment59">
@@ -2042,7 +2050,7 @@
                                             <property name="justify">center</property>
                                             <property name="ellipsize">end</property>
                                             <property name="width_chars">20</property>
-                                            <property name="xalign">0.60000002384185791</property>
+                                            <property name="xalign">0.6000000238418579</property>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
@@ -2068,8 +2076,8 @@
                               <object class="GtkFrame" id="frame60">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="margin_left">10</property>
-                                <property name="margin_right">10</property>
+                                <property name="margin_start">10</property>
+                                <property name="margin_end">10</property>
                                 <property name="label_xalign">0</property>
                                 <child>
                                   <object class="GtkAlignment" id="alignment60">
@@ -2101,7 +2109,7 @@
                         </child>
                         <child type="tab">
                           <object class="GtkLabel" id="label75">
-                            <property name="width_request">450</property>
+                            <property name="width_request">200</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="label" translatable="yes">REAL SYSTEM</property>
@@ -2138,14 +2146,16 @@
             <property name="height_request">820</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="opacity">0.98000000044703484</property>
+            <property name="opacity">0.9800000004470348</property>
+            <property name="halign">center</property>
             <property name="margin_top">10</property>
             <property name="label_xalign">0</property>
             <child>
               <object class="GtkAlignment" id="alignment3">
-                <property name="width_request">350</property>
+                <property name="width_request">100</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="halign">center</property>
                 <property name="left_padding">12</property>
                 <property name="right_padding">12</property>
                 <child>
@@ -2157,15 +2167,17 @@
                       <object class="GtkFrame" id="frame5">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="margin_top">10</property>
+                        <property name="halign">center</property>
+                        <property name="margin_top">2</property>
                         <property name="label_xalign">0</property>
+                        <property name="shadow_type">none</property>
                         <child>
                           <object class="GtkAlignment" id="alignment5">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <child>
                               <object class="GtkBox" id="box6">
-                                <property name="width_request">320</property>
+                                <property name="width_request">120</property>
                                 <property name="height_request">110</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
@@ -2178,15 +2190,15 @@
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="halign">center</property>
-                                    <property name="spacing">30</property>
-                                    <property name="homogeneous">True</property>
+                                    <property name="spacing">20</property>
                                     <child>
                                       <object class="GtkLabel" id="label13">
-                                        <property name="width_request">80</property>
+                                        <property name="width_request">25</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
                                         <property name="halign">center</property>
                                         <property name="valign">center</property>
+                                        <property name="margin_start">10</property>
                                         <property name="label" translatable="yes">MANUAL
 MODE</property>
                                         <property name="justify">center</property>
@@ -2199,13 +2211,13 @@ MODE</property>
                                     </child>
                                     <child>
                                       <object class="GtkLevelBar" id="levelbar8">
-                                        <property name="width_request">80</property>
+                                        <property name="width_request">25</property>
                                         <property name="height_request">25</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
                                         <property name="halign">center</property>
                                         <property name="valign">center</property>
-                                        <property name="margin_right">2</property>
+                                        <property name="margin_end">2</property>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
@@ -2215,13 +2227,13 @@ MODE</property>
                                     </child>
                                     <child>
                                       <object class="GtkLevelBar" id="levelbar9">
-                                        <property name="width_request">80</property>
+                                        <property name="width_request">25</property>
                                         <property name="height_request">25</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
                                         <property name="halign">center</property>
                                         <property name="valign">center</property>
-                                        <property name="margin_left">2</property>
+                                        <property name="margin_start">2</property>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
@@ -2231,7 +2243,7 @@ MODE</property>
                                     </child>
                                     <child>
                                       <object class="GtkLabel" id="label14">
-                                        <property name="width_request">80</property>
+                                        <property name="width_request">25</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
                                         <property name="halign">center</property>
@@ -2248,12 +2260,13 @@ MODE</property>
                                     </child>
                                     <child>
                                       <object class="GtkLabel" id="labelAUTMODE">
-                                        <property name="width_request">38</property>
+                                        <property name="width_request">25</property>
                                         <property name="height_request">20</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
                                         <property name="halign">center</property>
                                         <property name="valign">center</property>
+                                        <property name="margin_end">10</property>
                                         <property name="label" translatable="yes">label</property>
                                         <property name="justify">center</property>
                                         <property name="ellipsize">end</property>
@@ -2289,13 +2302,14 @@ MODE</property>
                       <object class="GtkNotebook" id="notebook3">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <property name="halign">center</property>
                         <child>
                           <object class="GtkFrame" id="frame6">
                             <property name="height_request">620</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="margin_left">10</property>
-                            <property name="margin_right">10</property>
+                            <property name="margin_start">10</property>
+                            <property name="margin_end">10</property>
                             <property name="margin_top">10</property>
                             <property name="label_xalign">0</property>
                             <child>
@@ -2313,8 +2327,8 @@ MODE</property>
                                         <property name="can_focus">False</property>
                                         <property name="halign">center</property>
                                         <property name="valign">start</property>
-                                        <property name="margin_left">10</property>
-                                        <property name="margin_right">10</property>
+                                        <property name="margin_start">10</property>
+                                        <property name="margin_end">10</property>
                                         <property name="margin_top">20</property>
                                         <property name="margin_bottom">20</property>
                                         <property name="spacing">75</property>
@@ -2322,7 +2336,7 @@ MODE</property>
                                         <child>
                                           <object class="GtkButton" id="buttonTAKEOFF">
                                             <property name="label" translatable="yes">TAKEOFF</property>
-                                            <property name="width_request">80</property>
+                                            <property name="width_request">40</property>
                                             <property name="height_request">50</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
@@ -2377,7 +2391,7 @@ MODE</property>
                                           <object class="GtkFrame" id="frame27">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="margin_left">5</property>
+                                            <property name="margin_start">5</property>
                                             <property name="margin_bottom">30</property>
                                             <property name="label_xalign">0</property>
                                             <child>
@@ -2516,7 +2530,7 @@ MODE</property>
                                           <object class="GtkFrame" id="frame1">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="margin_right">5</property>
+                                            <property name="margin_end">5</property>
                                             <property name="margin_bottom">30</property>
                                             <property name="label_xalign">0</property>
                                             <child>
@@ -2611,14 +2625,14 @@ ALTITUDE</property>
                                     </child>
                                     <child>
                                       <object class="GtkNotebook" id="notebook1">
-                                        <property name="width_request">600</property>
+                                        <property name="width_request">400</property>
                                         <property name="height_request">520</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="halign">center</property>
                                         <property name="valign">center</property>
-                                        <property name="margin_left">5</property>
-                                        <property name="margin_right">5</property>
+                                        <property name="margin_start">5</property>
+                                        <property name="margin_end">5</property>
                                         <property name="margin_top">4</property>
                                         <property name="margin_bottom">5</property>
                                         <child>
@@ -2996,7 +3010,6 @@ ALTITUDE</property>
                                                 <property name="halign">center</property>
                                                 <property name="valign">center</property>
                                                 <property name="margin_bottom">20</property>
-                                                <property name="yalign">0.49000000953674316</property>
                                                 <signal name="clicked" handler="on_buttonHOLD_POS_clicked" swapped="no"/>
                                               </object>
                                               <packing>
@@ -3030,7 +3043,7 @@ ALTITUDE</property>
                                                     <property name="width_request">100</property>
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
-                                                    <property name="margin_left">6</property>
+                                                    <property name="margin_start">6</property>
                                                     <property name="label_xalign">0</property>
                                                     <property name="shadow_type">etched-out</property>
                                                     <child>
@@ -3139,8 +3152,8 @@ ALTITUDE</property>
                                                             <property name="can_focus">True</property>
                                                             <property name="halign">center</property>
                                                             <property name="valign">center</property>
-                                                            <property name="margin_left">2</property>
-                                                            <property name="margin_right">2</property>
+                                                            <property name="margin_start">2</property>
+                                                            <property name="margin_end">2</property>
                                                             <property name="margin_top">3</property>
                                                             <property name="margin_bottom">3</property>
                                                             <property name="width_chars">5</property>
@@ -3262,7 +3275,7 @@ ALTITUDE</property>
                                                     <property name="width_request">130</property>
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
-                                                    <property name="margin_right">6</property>
+                                                    <property name="margin_end">6</property>
                                                     <property name="label_xalign">0</property>
                                                     <property name="shadow_type">etched-out</property>
                                                     <child>
@@ -3352,7 +3365,6 @@ ALTITUDE</property>
                                                 <property name="halign">center</property>
                                                 <property name="valign">center</property>
                                                 <property name="margin_top">5</property>
-                                                <property name="yalign">0.49000000953674316</property>
                                                 <signal name="clicked" handler="on_buttonSEND_NEW_POS_clicked" swapped="no"/>
                                               </object>
                                               <packing>
@@ -5354,7 +5366,7 @@ BUILDING</property>
                                                             <property name="valign">center</property>
                                                             <property name="width_chars">0</property>
                                                             <property name="max_width_chars">10</property>
-                                                            <property name="text" translatable="yes">/home/jura/data/Building_trajectory_1.txt</property>
+                                                            <property name="text" translatable="yes">/home/larics/data/Building_trajectory_1.txt</property>
                                                             <property name="input_purpose">alpha</property>
                                                             </object>
                                                             <packing>
@@ -5629,7 +5641,7 @@ PLANNER</property>
                         </child>
                         <child type="tab">
                           <object class="GtkLabel" id="label99">
-                            <property name="width_request">200</property>
+                            <property name="width_request">100</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="label" translatable="yes">SIMULATED SYSTEM CONTROL</property>
@@ -5786,7 +5798,7 @@ PLANNER</property>
                         </child>
                         <child type="tab">
                           <object class="GtkLabel" id="label81">
-                            <property name="width_request">200</property>
+                            <property name="width_request">100</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="label" translatable="yes">REAL SYSTEM SETUP</property>
@@ -5801,8 +5813,9 @@ PLANNER</property>
                             <property name="height_request">620</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="margin_left">10</property>
-                            <property name="margin_right">10</property>
+                            <property name="halign">center</property>
+                            <property name="margin_start">10</property>
+                            <property name="margin_end">2</property>
                             <property name="margin_top">10</property>
                             <property name="label_xalign">0</property>
                             <child>
@@ -5819,8 +5832,8 @@ PLANNER</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
                                         <property name="halign">center</property>
-                                        <property name="margin_left">10</property>
-                                        <property name="margin_right">10</property>
+                                        <property name="margin_start">10</property>
+                                        <property name="margin_end">10</property>
                                         <property name="margin_top">20</property>
                                         <property name="margin_bottom">20</property>
                                         <property name="spacing">75</property>
@@ -5886,7 +5899,7 @@ PLANNER</property>
                                           <object class="GtkFrame" id="frame83">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="margin_left">5</property>
+                                            <property name="margin_start">5</property>
                                             <property name="margin_bottom">30</property>
                                             <property name="label_xalign">0</property>
                                             <child>
@@ -6025,7 +6038,7 @@ PLANNER</property>
                                           <object class="GtkFrame" id="frame84">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="margin_right">5</property>
+                                            <property name="margin_end">5</property>
                                             <property name="margin_bottom">30</property>
                                             <property name="label_xalign">0</property>
                                             <child>
@@ -6064,7 +6077,7 @@ ALTITUDE</property>
                                                             <property name="can_focus">True</property>
                                                             <property name="halign">center</property>
                                                             <property name="valign">center</property>
-                                                            <property name="margin_left">5</property>
+                                                            <property name="margin_start">5</property>
                                                             <property name="width_chars">5</property>
                                                             <property name="max_width_chars">6</property>
                                                             <property name="text" translatable="yes">2.0</property>
@@ -6080,8 +6093,8 @@ ALTITUDE</property>
                                                           <object class="GtkLabel" id="label108">
                                                             <property name="visible">True</property>
                                                             <property name="can_focus">False</property>
-                                                            <property name="margin_left">5</property>
-                                                            <property name="margin_right">12</property>
+                                                            <property name="margin_start">5</property>
+                                                            <property name="margin_end">12</property>
                                                             <property name="label" translatable="yes">m</property>
                                                           </object>
                                                           <packing>
@@ -6126,8 +6139,8 @@ ALTITUDE</property>
                                         <property name="can_focus">True</property>
                                         <property name="halign">center</property>
                                         <property name="valign">center</property>
-                                        <property name="margin_left">5</property>
-                                        <property name="margin_right">5</property>
+                                        <property name="margin_start">5</property>
+                                        <property name="margin_end">5</property>
                                         <property name="margin_top">4</property>
                                         <property name="margin_bottom">5</property>
                                         <child>
@@ -6163,7 +6176,7 @@ ALTITUDE</property>
                                                     <property name="width_request">100</property>
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
-                                                    <property name="margin_left">6</property>
+                                                    <property name="margin_start">6</property>
                                                     <property name="label_xalign">0</property>
                                                     <property name="shadow_type">etched-out</property>
                                                     <child>
@@ -6414,7 +6427,7 @@ ALTITUDE</property>
                                                     <property name="width_request">130</property>
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
-                                                    <property name="margin_right">6</property>
+                                                    <property name="margin_end">6</property>
                                                     <property name="label_xalign">0</property>
                                                     <property name="shadow_type">etched-out</property>
                                                     <child>
@@ -6505,7 +6518,6 @@ ALTITUDE</property>
                                                 <property name="halign">center</property>
                                                 <property name="valign">center</property>
                                                 <property name="margin_bottom">20</property>
-                                                <property name="yalign">0.49000000953674316</property>
                                               </object>
                                               <packing>
                                                 <property name="expand">False</property>
@@ -6538,7 +6550,7 @@ ALTITUDE</property>
                                                     <property name="width_request">100</property>
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
-                                                    <property name="margin_left">6</property>
+                                                    <property name="margin_start">6</property>
                                                     <property name="label_xalign">0</property>
                                                     <property name="shadow_type">etched-out</property>
                                                     <child>
@@ -6570,8 +6582,8 @@ ALTITUDE</property>
                                                             <property name="can_focus">True</property>
                                                             <property name="halign">center</property>
                                                             <property name="valign">center</property>
-                                                            <property name="margin_left">2</property>
-                                                            <property name="margin_right">2</property>
+                                                            <property name="margin_start">2</property>
+                                                            <property name="margin_end">2</property>
                                                             <property name="margin_top">3</property>
                                                             <property name="margin_bottom">3</property>
                                                             <property name="width_chars">5</property>
@@ -6647,8 +6659,8 @@ ALTITUDE</property>
                                                             <property name="can_focus">True</property>
                                                             <property name="halign">center</property>
                                                             <property name="valign">center</property>
-                                                            <property name="margin_left">2</property>
-                                                            <property name="margin_right">2</property>
+                                                            <property name="margin_start">2</property>
+                                                            <property name="margin_end">2</property>
                                                             <property name="margin_top">3</property>
                                                             <property name="margin_bottom">3</property>
                                                             <property name="width_chars">5</property>
@@ -6724,8 +6736,8 @@ ALTITUDE</property>
                                                             <property name="can_focus">True</property>
                                                             <property name="halign">center</property>
                                                             <property name="valign">center</property>
-                                                            <property name="margin_left">2</property>
-                                                            <property name="margin_right">2</property>
+                                                            <property name="margin_start">2</property>
+                                                            <property name="margin_end">2</property>
                                                             <property name="margin_top">3</property>
                                                             <property name="margin_bottom">3</property>
                                                             <property name="width_chars">5</property>
@@ -6770,7 +6782,7 @@ ALTITUDE</property>
                                                     <property name="width_request">130</property>
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
-                                                    <property name="margin_right">6</property>
+                                                    <property name="margin_end">6</property>
                                                     <property name="label_xalign">0</property>
                                                     <property name="shadow_type">etched-out</property>
                                                     <child>
@@ -6802,8 +6814,8 @@ ALTITUDE</property>
                                                             <property name="can_focus">True</property>
                                                             <property name="halign">center</property>
                                                             <property name="valign">center</property>
-                                                            <property name="margin_left">2</property>
-                                                            <property name="margin_right">2</property>
+                                                            <property name="margin_start">2</property>
+                                                            <property name="margin_end">2</property>
                                                             <property name="margin_top">3</property>
                                                             <property name="margin_bottom">3</property>
                                                             <property name="width_chars">5</property>
@@ -6860,7 +6872,6 @@ ALTITUDE</property>
                                                 <property name="halign">center</property>
                                                 <property name="valign">center</property>
                                                 <property name="margin_top">5</property>
-                                                <property name="yalign">0.49000000953674316</property>
                                               </object>
                                               <packing>
                                                 <property name="expand">False</property>
@@ -8461,7 +8472,7 @@ REPEAT</property>
                         </child>
                         <child type="tab">
                           <object class="GtkLabel" id="label100">
-                            <property name="width_request">200</property>
+                            <property name="width_request">100</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="label" translatable="yes">REAL SYSTEM CONTROL</property>
@@ -8494,6 +8505,9 @@ REPEAT</property>
           </packing>
         </child>
       </object>
+    </child>
+    <child type="titlebar">
+      <placeholder/>
     </child>
   </object>
 </interface>
