@@ -1,0 +1,14 @@
+float64[]           building_x
+float64[]           building_y
+float64             flight_altitude
+float64             building_distance
+float64             trajectory_resolution
+string		    wp_file_path
+string		    coord_sys_text
+float64             h_speed
+float64             v_speed	
+float64             h_acc	
+float64             v_acc			
+---
+trajectory_msgs/MultiDOFJointTrajectory multi_dof_trajectory_data
+

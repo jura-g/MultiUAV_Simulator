@@ -1,0 +1,8 @@
+<launch>
+    <node name="geographiclib_global2local_service_node" pkg="graupner_serial" type="geographiclib_global2local_service_node" />
+    <node name="generate_trajectory_points_service_node" pkg="graupner_serial" type="generate_trajectory_points_service_node.py" />
+    <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" />
+    <node name="TrajectoryPlanningServiceNode" pkg="graupner_serial" type="TrajectoryPlanningServiceNode_Carrot.py" />
+    <node name="TrajectoryFromGUIServiceNode" pkg="graupner_serial" type="TrajectoryFromGUIServiceNode_Carrot.py" />
+    <node name="MissionControlNode" pkg="graupner_serial" type="MissionControlNode_Mavros.py" />
+</launch>
