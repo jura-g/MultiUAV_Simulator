@@ -16,6 +16,7 @@ from math import pi, sin, cos, atan2
 
 import rospy
 from sensor_msgs.msg import NavSatFix
+from geographic_msgs.msg import GeoPoint, GeoPose, GeoPoseStamped, GeoPath
 
 # import local files
 from GMLParser import GMLParser
@@ -118,7 +119,7 @@ class MapApp(threading.Thread):
         rospy.Subscriber("red/mavros/global_position/global", NavSatFix, self.GlobalOdometryCallback, callback_args="red")
         rospy.Subscriber("blue/mavros/global_position/global", NavSatFix, self.GlobalOdometryCallback, callback_args="green")
         rospy.Subscriber("yellow/mavros/global_position/global", NavSatFix, self.GlobalOdometryCallback, callback_args="blue")
-
+        self.building_points_pub = rospy.Publisher("BuildingPoints", GeoPath, queue_size=10)
 
 #       /* Gmaps and WebKit2 */
         self.mapHolder = WebKit2.WebView()
@@ -131,7 +132,7 @@ class MapApp(threading.Thread):
         self.v_translate = [0, 0]; self.alpha_rotate = 0
 
         # generate map.html
-        HTMLgenerator = MapHTMLgenerator(0, 0, 1, apikey='AIzaSyB4K6EcZSsquWCxziSSQ0MmCiIGpsOaF9Q')
+        HTMLgenerator = MapHTMLgenerator(0, 0, 1, apikey='')
         HTMLfile = os.path.dirname(os.path.abspath(__file__)) + "/map.html"
         HTMLgenerator.draw(HTMLfile)
 
@@ -166,9 +167,18 @@ class MapApp(threading.Thread):
             self.jsWrapper.add_UAV('blue')
             self.jsWrapper.execute()
 
-
+#   /* ROS */
     def GlobalOdometryCallback(self, data, UAV):
 		self.set_UAV_position(UAV, [data.longitude, data.latitude])
+
+    def ROSSendBuildingPoints(self, coords):
+        geoPath = GeoPath()
+        geoPoseStamped = GeoPoseStamped()
+        for coord in coords:
+            geoPoseStamped.pose.position.latitude = coord[1]
+            geoPoseStamped.pose.position.longitude = coord[0]
+            geoPath.append(geoPoseStamped)
+        self.building_points_pub.publish(geoPath)
     
 
     def set_UAV_position(self, color, coords):
@@ -314,6 +324,7 @@ class MapApp(threading.Thread):
         self.jsWrapper.add_polygon(coords, color=self.polygonColorHex, opacity=self.polygonOpacityAdjustment.get_value())
         self.jsWrapper.execute()
 
+        self.ROSSendBuildingPoints(coords[:-1])
 
     
 ##########################   GTK Handlers  ############################
