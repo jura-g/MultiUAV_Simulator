@@ -51,6 +51,7 @@ import threading
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib, GObject
+from map_glade import MapApp
 
 import matplotlib.pyplot as plt
 
@@ -1640,6 +1641,7 @@ class app_main:
 
 if __name__ == "__main__":
 	GUIapplication = app_main()
+	GUImap = MapApp()
 	#GUIapplicationROS = app_main()
 	#GUIapplicationGTK = GUIappGTK()
 	#GUIapplicationROS.daemon = True
