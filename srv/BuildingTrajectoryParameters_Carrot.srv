@@ -5,6 +5,7 @@ float64             building_distance
 float64             trajectory_resolution
 string		    wp_file_path
 string		    coord_sys_text
+bool		    plot_flag
 float64             h_speed
 float64             v_speed	
 float64             h_acc	

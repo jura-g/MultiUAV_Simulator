@@ -8,8 +8,6 @@ import math, numpy
 
 from std_msgs.msg import String
 
-from graupner_serial.msg import RCchannelData
-
 from nav_msgs.msg import Odometry
 
 from geometry_msgs.msg import PoseStamped
@@ -183,6 +181,7 @@ class MissionControl:
 
 	def SendPositionHoldTrajectoryData(self, UAV_ID):
 		if (self.trajectory_point_counter[UAV_ID] < len(self.planned_trajectory[UAV_ID].points)):
+			print(self.trajectory_point_counter[UAV_ID])
 			temp_point = MultiDOFJointTrajectoryPoint()
 			temp_point = self.planned_trajectory[UAV_ID].points[self.trajectory_point_counter[UAV_ID]]
 			self.multi_dof_traj_point_pub[UAV_ID].publish(temp_point)
@@ -288,6 +287,9 @@ class MissionControl:
 
 	def SendBuildingTrajectoryData(self, UAV_ID):
 		if (self.trajectory_point_counter[UAV_ID] < len(self.planned_trajectory[UAV_ID].points)):
+			#print("2222")
+			print(len(self.planned_trajectory[UAV_ID].points))
+			print(self.trajectory_point_counter[UAV_ID])
 			temp_point = MultiDOFJointTrajectoryPoint()
 			temp_point = self.planned_trajectory[UAV_ID].points[self.trajectory_point_counter[UAV_ID]]
 			self.multi_dof_traj_point_pub[UAV_ID].publish(temp_point)	
@@ -295,5 +297,5 @@ class MissionControl:
 
 if __name__ == "__main__":
 	rospy.init_node('MissionControlNode')
-	wp_mission_control = MissionControl()
-	wp_mission_control.run()
+	mission_control = MissionControl()
+	mission_control.run()

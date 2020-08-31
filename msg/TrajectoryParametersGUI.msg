@@ -1,0 +1,10 @@
+int32 selectedUAV
+int32 selectedUAV_mode
+float64[] desiredX
+float64[] desiredY
+float64[] desiredZ
+float64[] desiredW
+float64 desiredHS
+float64 desiredVS
+float64 desiredHA
+float64 desiredVA

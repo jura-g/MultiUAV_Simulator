@@ -22,7 +22,7 @@ from mavros_msgs.msg import State, HomePosition
 
 from nav_msgs.msg import Odometry
 
-from graupner_serial.msg import DesiredTrajectory, MissionWP, MissionStartStop, BatteryStatus, SelectedUAV, RCchannelData
+from graupner_serial.msg import DesiredTrajectory, MissionWP, MissionStartStop, BatteryStatus, SelectedUAV, RCchannelData, PlotData, TrajectoryParametersGUI, TrajectoryParametersBuilding, BuildingTrajectoryStatus
 
 from std_msgs.msg import String #,Empty
 
@@ -30,11 +30,9 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint, MultiDOFJ
 
 #from bebop_msgs.msg import CommonCommonStateBatteryStateChanged
 
-from sensor_msgs.msg import Image, Joy, NavSatFix
+from sensor_msgs.msg import Image, Joy, NavSatFix, BatteryState
 
 from geographic_msgs.msg import GeoPoint
-
-from cv_bridge import CvBridge, CvBridgeError
 
 from graupner_serial.srv import BuildingTrajectoryParameters_Carrot, GUITrajectoryParameters_Carrot
 
@@ -63,20 +61,20 @@ import matplotlib.pyplot as plt
 class stick_state(object):
 	def __init__(self, name, stick, channel_num):
 		self.name = name							# The name of the stick
-		self.stick = stick						  # The stick on the joystick that this stick maps to 
-		self.channel_num = channel_num			# Number of channel for stick
+		self.stick = stick							# The stick on the joystick that this stick maps to 
+		self.channel_num = channel_num				# Number of channel for stick
 
-		self.min_val = 0.0						  # Minimum stick value
+		self.min_val = 0.0							# Minimum stick value
 		self.max_val = 255.0						# Maximum stick value
-		self.active_up = False					  # True if up key is held pressed
+		self.active_up = False						# True if up key is held pressed
 		self.active_down = False					# True if down key is held pressed
 		self.zero = 0.0
 		self.val = self.zero						# Stick value at initialization at zero position
 		self.emit_val = int(self.val)
-		self.display_ready = False				  # Whether optional display params have been set
-		self.display_height = 0					 # Height on the display screen 
-		self.display_width = 0					  # Width on the display screen 
-		self.display_hor = True					 # Whether the display bar is horizontal, else vertical
+		self.display_ready = False					# Whether optional display params have been set
+		self.display_height = 0						# Height on the display screen 
+		self.display_width = 0						# Width on the display screen 
+		self.display_hor = True						# Whether the display bar is horizontal, else vertical
 		self.display_bar_g = []
 		self.display_bar_b = []
 
@@ -165,6 +163,7 @@ class app_main:
 		self.trajectory_ref_z_cur = [0.0 for x in range(self.number_of_UAVs+1)]
 		self.trajectory_ref_w_cur = [0.0 for x in range(self.number_of_UAVs+1)]
 
+		self.BatteryVoltage = [0.0 for x in range(self.number_of_UAVs+1)]
 
 		self.lat_cur_global = [0.0 for x in range(self.number_of_UAVs+1)]
 		self.long_cur_global = [0.0 for x in range(self.number_of_UAVs+1)]
@@ -175,11 +174,6 @@ class app_main:
 		self.X_home_point = [[0 for x in range(self.number_of_UAVs+1)] for y in range(2)]
 		self.Y_home_point = [[0 for x in range(self.number_of_UAVs+1)] for y in range(2)]
 		self.Z_home_point = [[0 for x in range(self.number_of_UAVs+1)] for y in range(2)]
-
-		#self.desiredX = [0.0 for x in range(90)]
-		#self.desiredY = [0.0 for x in range(90)]
-		#self.desiredZ = [0.0 for x in range(90)]
-		#self.desiredW = [0.0 for x in range(90)]
 
 		self.new_pos_counter = [0 for x in range(self.number_of_UAVs+1)]
 
@@ -198,10 +192,17 @@ class app_main:
 		self.UAV_WP = 1
 		self.BUILDING_POINT_num = 0
 		self.coord_sys = 0
+		self.building_plot_flag = False
 		self.planned_trajectory = [MultiDOFJointTrajectory for x in range(self.number_of_UAVs+1)]
 		self.trajectory_point_counter = [0 for x in range(self.number_of_UAVs+1)]
 		self.isBuildingTrajectoryReady = [False for x in range(self.number_of_UAVs+1)]
+		self.planning_building_trajectory = [False for x in range(self.number_of_UAVs+1)]
 
+		self.plot_x = []
+		self.plot_y = []
+		self.b_plot_x = []
+		self.b_plot_y = []
+		self.PlotDataReady = False
 
 		self.POI_number_of_parameters = 9	# [0] - point X coord
 											# [1] - point Y coord
@@ -224,6 +225,7 @@ class app_main:
 												# [1] - follow angle
 												# [2] - follow altitude
 		self.FOLLOW_param = [[0 for x in range(self.FOLLOW_number_of_parameters)] for y in range(self.number_of_UAVs+1)]
+		self.counter = 0
 
 		self.gladefile = roslib.packages.get_pkg_dir('graupner_serial')+"/scripts/MultiUAV_GUI_Node_Mavros.glade"
 		self.builder = Gtk.Builder()
@@ -403,6 +405,10 @@ class app_main:
 		self.rbFN = self.builder.get_object('radiobuttonFN')
 		self.rbFC.connect("toggled", self.on_radiobuttonFMODE_toggled)
 
+		#/* checkbuttons */
+		self.cbBUILDINGPLOT = self.builder.get_object('checkbuttonPLOTBUILDINGTRAJECTORY')
+		self.cbBUILDINGPLOT.connect("toggled", self.on_checkbuttonPLOTBUILDINGTRAJECTORY_toggled)
+
 		#/* switch */
 		self.swCARROT_CONTOLLER = self.builder.get_object('switchCARROTCONTOLLER')
 		self.swCARROT_CONTOLLER.connect("notify::active", self.on_switchCARROTCONTOLLER_activated)	
@@ -548,8 +554,13 @@ class app_main:
 			temp_pub = rospy.Publisher(self.UAV_names[n]+'/mavros/global_position/home', HomePosition, queue_size=10, latch=True)
 			time.sleep(0.02)
 			self.home_point_pub.append(temp_pub)
+		self.trajectory_param_GUI_pub = rospy.Publisher('TrajectoryParametersGUI', TrajectoryParametersGUI, queue_size=10)
+		self.trajectory_param_building_pub = rospy.Publisher('TrajectoryParametersBuilding', TrajectoryParametersBuilding, queue_size=10)
 		self.mission_start_pub = rospy.Publisher('MissionStartStop', MissionStartStop, queue_size=10)
 		self.mission_wp_pub = rospy.Publisher('MissionfromGUI', MissionWP, queue_size=10)
+		self.trajectory_status_pub = rospy.Publisher('ExecuteBuildingTrajectory', BuildingTrajectoryStatus, queue_size=10)
+
+		
 		
 		#/---ROS Subscribers---/#
 		rospy.Subscriber("GraupnerRCchannels", RCchannelData, self.RCchannelCallback)
@@ -561,7 +572,10 @@ class app_main:
 			rospy.Subscriber(self.UAV_names[n]+"/carrot/status", String, self.CarrotStatusCallback, callback_args=n)
 			rospy.Subscriber(self.UAV_names[n]+"/mavros/global_position/home", HomePosition, self.HomePositionCallback, callback_args=n)
 			rospy.Subscriber(self.UAV_names[n]+"/carrot/trajectory", MultiDOFJointTrajectoryPoint, self.CarrotTrajectoryCallback, callback_args=n)
-		rospy.Subscriber("BatteryStatusforGUI", BatteryStatus, self.BatteryCallback)
+			rospy.Subscriber(self.UAV_names[n]+"/mavros/battery", BatteryState, self.BatteryCallback, callback_args=n)
+		rospy.Subscriber("PlotData", PlotData, self.PlotCallback)
+		rospy.Subscriber("BuildingTrajectoryStatus", BuildingTrajectoryStatus, self.BuildingTrajectoryStatusCallback)
+		
 
 		#/---ROS Services---/#
 		self.request_TrajectoryPlanningService = rospy.ServiceProxy('TrajectoryPlanningService', BuildingTrajectoryParameters_Carrot)
@@ -614,6 +628,15 @@ class app_main:
 
 	def on_comboboxtextRCCONTROLLER_changed(self, combo):
 		self.RCController_status = combo.get_active_text()
+
+	def PlotCallback(self, data):
+		self.plot_x = data.plot_x
+		self.plot_y = data.plot_y
+		self.b_plot_x = list(data.b_plot_x)
+		self.b_plot_y = list(data.b_plot_y)
+		self.b_plot_x.append(self.b_plot_x[0])
+		self.b_plot_y.append(self.b_plot_y[0])
+		self.PlotDataReady = True
 		
 	#---------------------------------------------------------------------------------------------------------------------------------------------------------#
 	#/* ODOMETRY and STATE handlers */
@@ -652,6 +675,7 @@ class app_main:
 		self.long_cur_global[UAV_ID] = data.longitude
 		self.alt_cur_global[UAV_ID] = data.altitude
 
+
 	def StateCallback(self, data, UAV_ID):
 		if data.mode == "LAND":
 			self.UAV_state_mode[UAV_ID] = 0
@@ -665,6 +689,14 @@ class app_main:
 			self.UAV_state_mode[UAV_ID] = 4
 
 		self.UAV_state_armed[UAV_ID] = data.armed
+
+
+	def BatteryCallback(self, data, UAV_ID):
+
+		self.BatteryVoltage[UAV_ID] = data.voltage
+		#for n in range(1, self.number_of_UAVs+1):
+		#	self.max_batt_data[0][n] = data.maxBatt[n]
+		#	self.new_batt_data[0][n] = data.curBatt[n]
 
 	def CarrotStatusCallback(self, data, UAV_ID):
 		if data.data == "OFF":
@@ -709,6 +741,20 @@ class app_main:
 			self.CH5 = data.CH5
 			self.CH6 = data.CH6
 #---------------------------------------------------------------------------------------------------------------------------------------------------------#
+#	/* Trajectory Status handlers */
+	
+	def BuildingTrajectoryStatusCallback(self, data):
+		self.isBuildingTrajectoryReady[data.selectedUAV] = data.BuildingTrajectoryReady
+		self.planning_building_trajectory[self.selected_UAV] = False
+
+		if self.building_plot_flag and self.PlotDataReady:
+			plt.plot(self.b_plot_x, self.b_plot_y, 'r--')
+			plt.plot(self.plot_x, self.plot_y, 'b')
+			plt.grid(True)
+			plt.show()
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------------#
+
 	#/* ARM MOTORS function */
 	def on_buttonARMMOTORS_clicked(self, button):
 		resp = self.request_ArmMotorsService[self.selected_UAV](True)
@@ -803,16 +849,29 @@ class app_main:
 			desiredZ[1] = self.trajectory_ref_z_cur[self.selected_UAV]-0.1
 			desiredW[1] = self.trajectory_ref_w_cur[self.selected_UAV]
 
-			resp = self.request_TrajectoryFromGUIService(self.selected_UAV, self.UAV_mode[0][self.selected_UAV], desiredX, desiredY, desiredZ, desiredW, 1, 1, 0.5, 0.5)
-			self.planned_trajectory[self.selected_UAV] = resp.multi_dof_trajectory_data
+			#resp = self.request_TrajectoryFromGUIService(self.selected_UAV, self.UAV_mode[0][self.selected_UAV], desiredX, desiredY, desiredZ, desiredW, 1, 1, 0.5, 0.5)
+			#self.planned_trajectory[self.selected_UAV] = resp.multi_dof_trajectory_data
 
-			msgMissionStart = MissionStartStop()
-			msgMissionStart.selectedUAV = self.selected_UAV
-			msgMissionStart.isPositionHoldActiveFlag = True
-			msgMissionStart.isWPActiveFlag = False
-			msgMissionStart.isBuildingTrajectoryActiveFlag = False
-			msgMissionStart.multi_dof_trajectory_data = self.planned_trajectory[self.selected_UAV]
-			self.mission_start_pub.publish(msgMissionStart)
+			msgTrajectoryParameters = TrajectoryParametersGUI()
+			msgTrajectoryParameters.selectedUAV = self.selected_UAV
+			msgTrajectoryParameters.selectedUAV_mode = self.UAV_mode[0][self.selected_UAV]
+			msgTrajectoryParameters.desiredX = desiredX
+			msgTrajectoryParameters.desiredY = desiredY
+			msgTrajectoryParameters.desiredZ = desiredZ
+			msgTrajectoryParameters.desiredW = desiredW
+			msgTrajectoryParameters.desiredHS = 1
+			msgTrajectoryParameters.desiredVS = 1
+			msgTrajectoryParameters.desiredHA = 0.5
+			msgTrajectoryParameters.desiredVA = 0.5
+			self.trajectory_param_GUI_pub.publish(msgTrajectoryParameters)
+
+			#msgMissionStart = MissionStartStop()
+			#msgMissionStart.selectedUAV = self.selected_UAV
+			#msgMissionStart.isPositionHoldActiveFlag = True
+			#msgMissionStart.isWPActiveFlag = False
+			#msgMissionStart.isBuildingTrajectoryActiveFlag = False
+			#msgMissionStart.multi_dof_trajectory_data = self.planned_trajectory[self.selected_UAV]
+			#self.mission_start_pub.publish(msgMissionStart)
 
 	def on_buttonSEND_NEW_POS_clicked(self, button):
 		self.UAV_mode[0][self.selected_UAV] = 1
@@ -836,16 +895,29 @@ class app_main:
 			desiredHA = float(self.tbHA_PH.get_text())
 			desiredVA = float(self.tbVA_PH.get_text())
 
-			resp = self.request_TrajectoryFromGUIService(self.selected_UAV, self.UAV_mode[0][self.selected_UAV], desiredX, desiredY, desiredZ, desiredW, desiredHS, desiredVS, desiredHA, desiredVA)
-			self.planned_trajectory[self.selected_UAV] = resp.multi_dof_trajectory_data
+			#resp = self.request_TrajectoryFromGUIService(self.selected_UAV, self.UAV_mode[0][self.selected_UAV], desiredX, desiredY, desiredZ, desiredW, desiredHS, desiredVS, desiredHA, desiredVA)
+			#self.planned_trajectory[self.selected_UAV] = resp.multi_dof_trajectory_data
 
-			msgMissionStart = MissionStartStop()
-			msgMissionStart.selectedUAV = self.selected_UAV
-			msgMissionStart.isPositionHoldActiveFlag = True
-			msgMissionStart.isWPActiveFlag = False
-			msgMissionStart.isBuildingTrajectoryActiveFlag = False
-			msgMissionStart.multi_dof_trajectory_data = self.planned_trajectory[self.selected_UAV]
-			self.mission_start_pub.publish(msgMissionStart)
+			msgTrajectoryParameters = TrajectoryParametersGUI()
+			msgTrajectoryParameters.selectedUAV = self.selected_UAV
+			msgTrajectoryParameters.selectedUAV_mode = self.UAV_mode[0][self.selected_UAV]
+			msgTrajectoryParameters.desiredX = desiredX
+			msgTrajectoryParameters.desiredY = desiredY
+			msgTrajectoryParameters.desiredZ = desiredZ
+			msgTrajectoryParameters.desiredW = desiredW
+			msgTrajectoryParameters.desiredHS = desiredHS
+			msgTrajectoryParameters.desiredVS = desiredVS
+			msgTrajectoryParameters.desiredHA = desiredHA
+			msgTrajectoryParameters.desiredVA = desiredVA
+			self.trajectory_param_GUI_pub.publish(msgTrajectoryParameters)
+
+			#msgMissionStart = MissionStartStop()
+			#msgMissionStart.selectedUAV = self.selected_UAV
+			#msgMissionStart.isPositionHoldActiveFlag = True
+			#msgMissionStart.isWPActiveFlag = False
+			#msgMissionStart.isBuildingTrajectoryActiveFlag = False
+			#msgMissionStart.multi_dof_trajectory_data = self.planned_trajectory[self.selected_UAV]
+			#self.mission_start_pub.publish(msgMissionStart)
 
 			self.new_pos_counter[self.selected_UAV] = self.new_pos_counter[self.selected_UAV] + 1
 			self.lPH_STAUTS.set_text(str(self.new_pos_counter[self.selected_UAV]) + ". new position sent to UAV " + self.selected_UAV_name)
@@ -853,15 +925,6 @@ class app_main:
 
 	def on_buttonRETURN_HOME_clicked(self, button):	
 		self.UAV_mode[0][self.selected_UAV] = 1
-
-	#desired_tra_pub = rospy.Publisher(self.UAV_name+'_sim'+str(self.selected_UAV)+'/DesiredTrajectoryfromGUI', DesiredTrajectory, queue_size=10)
-
-	#msgDesTra = DesiredTrajectory()
-	#msgDesTra.desiredX = self.X_home_point[0][self.selected_UAV]
-	#msgDesTra.desiredY = self.Y_home_point[0][self.selected_UAV]
-	#msgDesTra.desiredZ = float(self.S_tbRTH_ALT.get_text())
-	#msgDesTra.desiredW = self.W_cur_orientation[0][self.selected_UAV]
-	#desired_tra_pub.publish(msgDesTra)
 
 		desiredX = [0.0 for x in range(3)]
 		desiredY = [0.0 for x in range(3)]
@@ -881,16 +944,29 @@ class app_main:
 		desiredZ[2] = float(self.S_tbRTH_ALT.get_text())
 		desiredW[2] = self.trajectory_ref_w_cur[self.selected_UAV]
 
-		resp = self.request_TrajectoryFromGUIService(self.selected_UAV, self.UAV_mode[0][self.selected_UAV], desiredX, desiredY, desiredZ, desiredW, 1, 1, 0.5, 0.5)
-		self.planned_trajectory[self.selected_UAV] = resp.multi_dof_trajectory_data
+		#resp = self.request_TrajectoryFromGUIService(self.selected_UAV, self.UAV_mode[0][self.selected_UAV], desiredX, desiredY, desiredZ, desiredW, 1, 1, 0.5, 0.5)
+		#self.planned_trajectory[self.selected_UAV] = resp.multi_dof_trajectory_data
 
-		msgMissionStart = MissionStartStop()
-		msgMissionStart.selectedUAV = self.selected_UAV
-		msgMissionStart.isPositionHoldActiveFlag = True
-		msgMissionStart.isWPActiveFlag = False
-		msgMissionStart.isBuildingTrajectoryActiveFlag = False
-		msgMissionStart.multi_dof_trajectory_data = self.planned_trajectory[self.selected_UAV]
-		self.mission_start_pub.publish(msgMissionStart)
+		msgTrajectoryParameters = TrajectoryParametersGUI()
+		msgTrajectoryParameters.selectedUAV = self.selected_UAV
+		msgTrajectoryParameters.selectedUAV_mode = self.UAV_mode[0][self.selected_UAV]
+		msgTrajectoryParameters.desiredX = desiredX
+		msgTrajectoryParameters.desiredY = desiredY
+		msgTrajectoryParameters.desiredZ = desiredZ
+		msgTrajectoryParameters.desiredW = desiredW
+		msgTrajectoryParameters.desiredHS = 1
+		msgTrajectoryParameters.desiredVS = 1
+		msgTrajectoryParameters.desiredHA = 0.5
+		msgTrajectoryParameters.desiredVA = 0.5
+		self.trajectory_param_GUI_pub.publish(msgTrajectoryParameters)
+
+		#msgMissionStart = MissionStartStop()
+		#msgMissionStart.selectedUAV = self.selected_UAV
+		#msgMissionStart.isPositionHoldActiveFlag = True
+		#msgMissionStart.isWPActiveFlag = False
+		#msgMissionStart.isBuildingTrajectoryActiveFlag = False
+		#msgMissionStart.multi_dof_trajectory_data = self.planned_trajectory[self.selected_UAV]
+		#self.mission_start_pub.publish(msgMissionStart)
 
 #   /* WAYPOINTS handlers */
 	def on_buttonADD_WP_clicked(self, button):
@@ -1011,9 +1087,7 @@ class app_main:
 
 		self.POI_param[0][self.selected_UAV][7] = math.atan2((self.Y_cur_position[0][self.selected_UAV]-self.POI_param[0][self.selected_UAV][1]),(self.X_cur_position[0][self.selected_UAV]-self.POI_param[0][self.selected_UAV][0]))
 
-		print(self.POI_param[0][self.selected_UAV][7])
-
-		#self.POI_param[0][self.selected_UAV][7] = math.atan2(self.POI_param[0][self.selected_UAV][1],self.POI_param[0][self.selected_UAV][0])
+		#print(self.POI_param[0][self.selected_UAV][7])
 
 		desiredX = [0.0 for x in range(2)]
 		desiredY = [0.0 for x in range(2)]
@@ -1031,71 +1105,43 @@ class app_main:
 
 		self.POI_param[0][self.selected_UAV][7] = self.POI_param[0][self.selected_UAV][7] + (0.3*self.POI_param[0][self.selected_UAV][5]*self.POI_param[0][self.selected_UAV][6])/self.POI_param[0][self.selected_UAV][3]	# poiANG = poiANG + poiVEL*poiDIR/poiR
 
-
-
-	#desired_tra_pub = rospy.Publisher(self.UAV_name+'_sim'+str(self.selected_UAV)+'/DesiredTrajectoryfromGUI', DesiredTrajectory, queue_size=10)
-		#desired_tra_pub = rospy.Publisher('red/mavros/setpoint_position/local', PoseStamped, queue_size=10)
-
-
-
-		#msgDesTra = PoseStamped()
-		#msgDesTra.pose.position.x = self.POI_param[0][self.selected_UAV][0] + self.POI_param[0][self.selected_UAV][3]*math.cos(self.POI_param[0][self.selected_UAV][7]) 	# desired_X = poiX + poiR * cos(poiANG)
-		#msgDesTra.pose.position.y = self.POI_param[0][self.selected_UAV][1] + self.POI_param[0][self.selected_UAV][3]*math.sin(self.POI_param[0][self.selected_UAV][7]) 	# desired_Y = poiY + poiR * sin(poiANG)
-		#msgDesTra.pose.position.z = self.POI_param[0][self.selected_UAV][2] + self.POI_param[0][self.selected_UAV][4]
-
-		#yaw = self.POI_param[0][self.selected_UAV][7] + (1*self.POI_param[0][self.selected_UAV][5]*self.POI_param[0][self.selected_UAV][6])/self.POI_param[0][self.selected_UAV][3]	# poiANG = poiANG + 0.01*poiVEL*poiDIR/poiR
-
-		#cy = math.cos(yaw * 0.5)
-		#sy = math.sin(yaw * 0.5)
-		#cp = math.cos(0 * 0.5)
-		#sp = math.sin(0 * 0.5)
-		#cr = math.cos(0 * 0.5)
-		#sr = math.sin(0 * 0.5)
-		#msgDesTra.pose.orientation.x = sr * cp * cy - cr * sp * sy
-		#msgDesTra.pose.orientation.y = cr * sp * cy + sr * cp * sy
-		#msgDesTra.pose.orientation.z = cr * cp * sy - sr * sp * cy
-		#msgDesTra.pose.orientation.w = cr * cp * cy + sr * sp * sy
-		#desired_tra_pub.publish(msgDesTra)
-
-		#msgDesTra = DesiredTrajectory()
-		#msgDesTra.desiredX = self.POI_param[0][self.selected_UAV][0] + self.POI_param[0][self.selected_UAV][3]*math.cos(self.POI_param[0][self.selected_UAV][7]) 	# desired_X = poiX + poiR * cos(poiANG)
-		#msgDesTra.desiredY = self.POI_param[0][self.selected_UAV][1] + self.POI_param[0][self.selected_UAV][3]*math.sin(self.POI_param[0][self.selected_UAV][7]) 	# desired_Y = poiY + poiR * sin(poiANG)
-		#msgDesTra.desiredZ = self.POI_param[0][self.selected_UAV][2] + self.POI_param[0][self.selected_UAV][4]					# desired_Z = poiZ + poiALT
-		#msgDesTra.desiredW = self.POI_param[0][self.selected_UAV][7]
-			
-		#desired_tra_pub.publish(msgDesTra)
-
 		for n in range(0, int(2*self.POI_param[0][self.selected_UAV][3]*math.pi/0.1)):
-		#for n in range(2, 90):
-			#desiredX[n] = self.POI_param[0][self.selected_UAV][0] + self.POI_param[0][self.selected_UAV][3]*math.cos(self.POI_param[0][self.selected_UAV][7]) 		# desired_X = poiX + poiR * cos(poiANG)
-			#desiredY[n] = self.POI_param[0][self.selected_UAV][1] + self.POI_param[0][self.selected_UAV][3]*math.sin(self.POI_param[0][self.selected_UAV][7]) 		# desired_Y = poiY + poiR * sin(poiANG)
-			#desiredZ[n] = self.POI_param[0][self.selected_UAV][2] + self.POI_param[0][self.selected_UAV][4]														# desired_Z = poiZ + poiALT
-			#desiredW[n] = self.POI_param[0][self.selected_UAV][7] + 3.14
-
 			desiredX.append(self.POI_param[0][self.selected_UAV][0] + self.POI_param[0][self.selected_UAV][3]*math.cos(self.POI_param[0][self.selected_UAV][7])) 		# desired_X = poiX + poiR * cos(poiANG)
 			desiredY.append(self.POI_param[0][self.selected_UAV][1] + self.POI_param[0][self.selected_UAV][3]*math.sin(self.POI_param[0][self.selected_UAV][7])) 		# desired_Y = poiY + poiR * sin(poiANG)
 			desiredZ.append(self.POI_param[0][self.selected_UAV][2] + self.POI_param[0][self.selected_UAV][4])															# desired_Z = poiZ + poiALT
 			desiredW.append(self.POI_param[0][self.selected_UAV][7] + math.pi)
-
 			self.POI_param[0][self.selected_UAV][7] = self.POI_param[0][self.selected_UAV][7] + (0.1*self.POI_param[0][self.selected_UAV][6])/self.POI_param[0][self.selected_UAV][3]	# poiANG = poiANG + 0.1*poiDIR/poiR
-			#self.POI_param[0][self.selected_UAV][7] = self.POI_param[0][self.selected_UAV][7] + 0.07*self.POI_param[0][self.selected_UAV][6]
-			#print(self.POI_param[0][self.selected_UAV][7])
+
 		
 		plt.plot(desiredX, desiredY, 'g.')
 		plt.plot(desiredX[1], desiredY[1], 'rx')
+		plt.grid(True)
 		plt.show()
 
-		resp = self.request_TrajectoryFromGUIService(self.selected_UAV, self.UAV_mode[0][self.selected_UAV], desiredX, desiredY, desiredZ, desiredW, 1, 1, 0.5, 0.5)
-		self.planned_trajectory[self.selected_UAV] = resp.multi_dof_trajectory_data
+		#resp = self.request_TrajectoryFromGUIService(self.selected_UAV, self.UAV_mode[0][self.selected_UAV], desiredX, desiredY, desiredZ, desiredW, 1, 1, 0.5, 0.5)
+		#self.planned_trajectory[self.selected_UAV] = resp.multi_dof_trajectory_data
 
-		mission_start_pub = rospy.Publisher('MissionStartStop', MissionStartStop, queue_size=10)
-		msgMissionStart = MissionStartStop()
-		msgMissionStart.selectedUAV = self.selected_UAV
-		msgMissionStart.isPositionHoldActiveFlag = True
-		msgMissionStart.isWPActiveFlag = False
-		msgMissionStart.isBuildingTrajectoryActiveFlag = False
-		msgMissionStart.multi_dof_trajectory_data = self.planned_trajectory[self.selected_UAV]
-		mission_start_pub.publish(msgMissionStart)	
+		msgTrajectoryParameters = TrajectoryParametersGUI()
+		msgTrajectoryParameters.selectedUAV = self.selected_UAV
+		msgTrajectoryParameters.selectedUAV_mode = self.UAV_mode[0][self.selected_UAV]
+		msgTrajectoryParameters.desiredX = desiredX
+		msgTrajectoryParameters.desiredY = desiredY
+		msgTrajectoryParameters.desiredZ = desiredZ
+		msgTrajectoryParameters.desiredW = desiredW
+		msgTrajectoryParameters.desiredHS = 1
+		msgTrajectoryParameters.desiredVS = 1
+		msgTrajectoryParameters.desiredHA = 0.5
+		msgTrajectoryParameters.desiredVA = 0.5
+		self.trajectory_param_GUI_pub.publish(msgTrajectoryParameters)
+
+		#mission_start_pub = rospy.Publisher('MissionStartStop', MissionStartStop, queue_size=10)
+		#msgMissionStart = MissionStartStop()
+		#msgMissionStart.selectedUAV = self.selected_UAV
+		#msgMissionStart.isPositionHoldActiveFlag = True
+		#msgMissionStart.isWPActiveFlag = False
+		#msgMissionStart.isBuildingTrajectoryActiveFlag = False
+		#msgMissionStart.multi_dof_trajectory_data = self.planned_trajectory[self.selected_UAV]
+		#mission_start_pub.publish(msgMissionStart)	
 
 
 		self.POI_param[0][self.selected_UAV][8] = self.cur_odometry_time[0][self.selected_UAV]
@@ -1138,6 +1184,41 @@ class app_main:
 			self.follow_mode = 1
 		else:
 			self.follow_mode = 2
+
+	def Follow_mode_update(self, UAV_ID):
+		if self.carrot_status[UAV_ID] == 1:
+			desiredX = [0.0 for x in range(2)]
+			desiredY = [0.0 for x in range(2)]
+			desiredZ = [0.0 for x in range(2)]
+			desiredW = [0.0 for x in range(2)]
+
+			desiredX[0] = self.trajectory_ref_x_cur[UAV_ID]
+			desiredY[0] = self.trajectory_ref_y_cur[UAV_ID]
+			desiredZ[0] = self.trajectory_ref_z_cur[UAV_ID]
+			desiredW[0] = self.trajectory_ref_w_cur[UAV_ID]
+			desiredX[1] = self.X_cur_position[0][self.leader_UAV[UAV_ID]] + self.FOLLOW_param[UAV_ID][0]*math.cos(self.FOLLOW_param[UAV_ID][1])	# desired_X = leader_X + follow_distance*cos(follow_angle)
+			desiredY[1] = self.Y_cur_position[0][self.leader_UAV[UAV_ID]] + self.FOLLOW_param[UAV_ID][0]*math.sin(self.FOLLOW_param[UAV_ID][1])	# desired_Y = leader_Y + follow_distance*sin(follow_angle)
+			desiredZ[1] = self.Z_cur_position[0][self.leader_UAV[UAV_ID]] + self.FOLLOW_param[UAV_ID][2]										# desired_Z = leader_Z + follow_altitude
+			desiredW[1] = self.trajectory_ref_w_cur[UAV_ID]
+			#desiredHS = float(self.tbHS_PH.get_text())
+			#desiredVS = float(self.tbVS_PH.get_text())
+			#desiredHA = float(self.tbHA_PH.get_text())
+			#desiredVA = float(self.tbVA_PH.get_text())
+
+			print("11")
+
+			if abs(desiredX[1]-desiredX[0]) > 0.1 or abs(desiredY[1]-desiredY[0]) > 0.1 or abs(desiredZ[1]-desiredZ[0]) > 0.1:
+				print("22")
+				resp = self.request_TrajectoryFromGUIService(UAV_ID, self.UAV_mode[0][UAV_ID], desiredX, desiredY, desiredZ, desiredW, 1, 1, 0.5, 0.5)
+				self.planned_trajectory[UAV_ID] = resp.multi_dof_trajectory_data
+
+				msgMissionStart = MissionStartStop()
+				msgMissionStart.selectedUAV = UAV_ID
+				msgMissionStart.isPositionHoldActiveFlag = True
+				msgMissionStart.isWPActiveFlag = False
+				msgMissionStart.isBuildingTrajectoryActiveFlag = False
+				msgMissionStart.multi_dof_trajectory_data = self.planned_trajectory[UAV_ID]
+				self.mission_start_pub.publish(msgMissionStart)
 
 
 #   /* TRAJECTORY PLANNER handlers */
@@ -1197,53 +1278,75 @@ class app_main:
 			print("Cancel clicked")
 		dialog.destroy()
 
+	def on_checkbuttonPLOTBUILDINGTRAJECTORY_toggled(self, button):
+		if button.get_active():
+			self.building_plot_flag = True
+		else:
+			self.building_plot_flag = False
+
 	def on_buttonPLAN_TRAJECTORY_clicked(self, button):
+		print(self.building_plot_flag)
 		building_x = []
 		building_y = []
+		for row in self.liststore4:
+			building_x.append(row[1])
+			building_y.append(row[2])
 		flight_altitude = float(self.tbTRAJ_ALT.get_text())
 		building_distance = float(self.tbBUIL_DIST.get_text())
 		trajectory_resolution = float(self.tbWP_RES.get_text())
 		wp_file_path = self.tbWP_PATH.get_text()
 		coord_sys_text = self.cbtCOORDSYS.get_active_text()
+		plot_flag = self.building_plot_flag
 		h_speed = float(self.tbHS_TP.get_text())
 		v_speed = float(self.tbVS_TP.get_text())
 		h_acc = float(self.tbHA_TP.get_text())
 		v_acc = float(self.tbVA_TP.get_text())
 
-		for row in self.liststore4:
-			building_x.append(row[1])
-			building_y.append(row[2])
+		msgTrajectoryParameters = TrajectoryParametersBuilding()
+		msgTrajectoryParameters.selectedUAV = self.selected_UAV
+		msgTrajectoryParameters.building_x = building_x
+		msgTrajectoryParameters.building_y = building_y
+		msgTrajectoryParameters.flight_altitude = flight_altitude
+		msgTrajectoryParameters.building_distance = building_distance
+		msgTrajectoryParameters.trajectory_resolution = trajectory_resolution
+		msgTrajectoryParameters.wp_file_path = wp_file_path
+		msgTrajectoryParameters.coord_sys_text = coord_sys_text
+		msgTrajectoryParameters.plot_flag = plot_flag
+		msgTrajectoryParameters.h_speed = h_speed
+		msgTrajectoryParameters.v_speed = v_speed
+		msgTrajectoryParameters.h_acc = h_acc
+		msgTrajectoryParameters.v_acc = v_acc
+		self.trajectory_param_building_pub.publish(msgTrajectoryParameters)
 
-		resp = self.request_TrajectoryPlanningService(building_x, building_y, flight_altitude, building_distance, trajectory_resolution, wp_file_path, coord_sys_text, h_speed, v_speed, h_acc, v_acc)
-		self.planned_trajectory[self.selected_UAV] = resp.multi_dof_trajectory_data
-		self.isBuildingTrajectoryReady[self.selected_UAV] = True
+		#resp = self.request_TrajectoryPlanningService(building_x, building_y, flight_altitude, building_distance, trajectory_resolution, wp_file_path, coord_sys_text, plot_flag, h_speed, v_speed, h_acc, v_acc)
+		#self.planned_trajectory[self.selected_UAV] = resp.multi_dof_trajectory_data
 
-	#print(self.planned_trajectory[self.selected_UAV].points[8])
-	
+		#if self.building_plot_flag:
+		#	plt.plot(self.b_plot_x, self.b_plot_y, 'r--')
+		#	plt.plot(self.plot_x, self.plot_y, 'b')
+		#	plt.grid(True)
+		#	plt.show()
+
+		#self.isBuildingTrajectoryReady[self.selected_UAV] = True
+		self.planning_building_trajectory[self.selected_UAV] = True
+
 	def on_buttonEXECUTE_TRAJECTORY_clicked(self, button):
 		self.UAV_mode[0][self.selected_UAV] = 5
 
 		if self.isBuildingTrajectoryReady[self.selected_UAV]:
-			#mission_start_pub = rospy.Publisher('MissionStartStop', MissionStartStop, queue_size=10)
-			msgMissionStart = MissionStartStop()
-			msgMissionStart.selectedUAV = self.selected_UAV
-			msgMissionStart.isPositionHoldActiveFlag = False
-			msgMissionStart.isWPActiveFlag = False
-			msgMissionStart.isBuildingTrajectoryActiveFlag = True
-			msgMissionStart.multi_dof_trajectory_data = self.planned_trajectory[self.selected_UAV]
-			self.mission_start_pub.publish(msgMissionStart)
+			msgTrajectoryStatus = BuildingTrajectoryStatus()
+			msgTrajectoryStatus.selectedUAV = self.selected_UAV
+			msgTrajectoryStatus.BuildingTrajectoryReady = True
+			msgTrajectoryStatus.ExecuteBuildingTrajectory = True
+			self.trajectory_status_pub.publish(msgTrajectoryStatus)
+			print("11")
 
 			self.isBuildingTrajectoryReady[self.selected_UAV] = False
 	
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------#
 #---------------------------------------------------------------------------------------------------------------------------------------------------------#
-#   /* BATTERY SIM handlers */
-	def BatteryCallback(self, data):
 
-		for n in range(1, self.number_of_UAVs+1):
-			self.max_batt_data[0][n] = data.maxBatt[n]
-			self.new_batt_data[0][n] = data.curBatt[n]
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------#
 #   /* UAV STATUS updadtes */
@@ -1331,6 +1434,8 @@ class app_main:
 		if self.nb1.get_current_page() == 4:
 			if self.isBuildingTrajectoryReady[self.selected_UAV]:
 				self.S_lTRAJSTATUS.set_text("Trajectory ready to execute")
+			elif self.planning_building_trajectory[self.selected_UAV]:
+				self.S_lTRAJSTATUS.set_text("Planning trajectory")
 			else:
 				self.S_lTRAJSTATUS.set_text("Trajectory not ready")
 
@@ -1350,6 +1455,7 @@ class app_main:
 			#liststore3[Gtk.TreePath(n-1)][0] = new_batt_data[n]
 
 		self.pb1.set_fraction(self.UAV_batt_data[0][self.selected_UAV])
+		self.pb1.set_text("%4.2f V" % self.BatteryVoltage[self.selected_UAV])
 		self.lBATT.set_text("UAV "+str(self.selected_UAV)+" BATTERY")
 
 
@@ -1408,7 +1514,7 @@ class app_main:
 			#simRC_pub = rospy.Publisher(self.selected_UAV_name+'/joy', Joy, queue_size=10)
 			msgSimRC = Joy()
 			msgSimRC.axes = [scaled_CH4, scaled_CH1, scaled_CH2, scaled_CH3, self.CH5, self.CH6, 0, 0]
-			msgSimRC.buttons = [0,0,0,0,0,1]
+			msgSimRC.buttons = [0,0,0,0,0,1]	
 			self.simRC_pub[self.selected_UAV].publish(msgSimRC)
 
 		self.lbS1.set_value(self.CH1)
@@ -1505,16 +1611,19 @@ class app_main:
 		for n in range(1, self.number_of_UAVs+1):
 #			if (mode_flags[0][n][4]):
 			if self.UAV_mode[0][n] == 4:
+				self.counter = self.counter + 1
+				if self.counter > 10:
+					self.counter = 0
+					self.Follow_mode_update(n)
+				#desired_tra_pub = rospy.Publisher(self.UAV_name+'_sim'+str(n)+'/DesiredTrajectoryfromGUI', DesiredTrajectory, queue_size=10)
 
-				desired_tra_pub = rospy.Publisher(self.UAV_name+'_sim'+str(n)+'/DesiredTrajectoryfromGUI', DesiredTrajectory, queue_size=10)
+				#msgDesTra = DesiredTrajectory()
+				#msgDesTra.desiredX = self.X_cur_position[0][self.leader_UAV[n]] + self.FOLLOW_param[n][0]*math.cos(self.FOLLOW_param[n][1])	# desired_X = leader_X + follow_distance*cos(follow_angle)
+				#msgDesTra.desiredY = self.Y_cur_position[0][self.leader_UAV[n]] + self.FOLLOW_param[n][0]*math.sin(self.FOLLOW_param[n][1])	# desired_Y = leader_Y + follow_distance*sin(follow_angle)
+				#msgDesTra.desiredZ = self.Z_cur_position[0][self.leader_UAV[n]] + self.FOLLOW_param[n][2]					# desired_Z = leader_Z + follow_altitude
+				#msgDesTra.desiredW = self.W_cur_orientation[0][n]
 
-				msgDesTra = DesiredTrajectory()
-				msgDesTra.desiredX = self.X_cur_position[0][self.leader_UAV[n]] + self.FOLLOW_param[n][0]*math.cos(self.FOLLOW_param[n][1])	# desired_X = leader_X + follow_distance*cos(follow_angle)
-				msgDesTra.desiredY = self.Y_cur_position[0][self.leader_UAV[n]] + self.FOLLOW_param[n][0]*math.sin(self.FOLLOW_param[n][1])	# desired_Y = leader_Y + follow_distance*sin(follow_angle)
-				msgDesTra.desiredZ = self.Z_cur_position[0][self.leader_UAV[n]] + self.FOLLOW_param[n][2]					# desired_Z = leader_Z + follow_altitude
-				msgDesTra.desiredW = self.W_cur_orientation[0][n]
-
-				desired_tra_pub.publish(msgDesTra)
+				#desired_tra_pub.publish(msgDesTra)
 
 		#/* TRAJECTORY MODE */
 

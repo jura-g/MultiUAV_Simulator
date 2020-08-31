@@ -9,7 +9,7 @@ from math import sin, cos
 
 from nav_msgs.msg import Odometry
 
-from graupner_serial.msg import MissionWP, MissionStartStop
+from graupner_serial.msg import MissionWP, MissionStartStop, PlotData
 
 from topp_ros.srv import GenerateTrajectory, GenerateTrajectoryRequest
 
@@ -71,6 +71,8 @@ class RequestTrajectory():
 	#uav_pose_sub = rospy.Subscriber('/red/carrot/pose',
 		#	PoseStamped, pose_update)
 
+		self.plot_data_pub = rospy.Publisher('PlotData', PlotData, queue_size=10)
+
 	#self.UAV_name = rospy.get_param('uav_name_param')
 		for n in range(1, self.number_of_UAVs+1):
 			rospy.Subscriber(self.UAV_names[n]+"/mavros/global_position/local", Odometry, self.OdometryCallback, callback_args=n)
@@ -95,33 +97,27 @@ class RequestTrajectory():
 		res_height = 100
 		wp_file_path = req.wp_file_path
 		coord_sys_text = req.coord_sys_text
+		plot_flag = req.plot_flag
 		traj_wp_HS = req.h_speed
 		traj_wp_VS = req.v_speed
 		traj_wp_HA = req.h_acc
 		traj_wp_VA = req.v_acc
 
-		#latitude = [45.807742, 45.807643, 45.808806, 45.808866]	# mimara (u 4 tocke)
-		#longitude = [15.966094, 15.967185, 15.967314, 15.966224]
-		#latitude = [45.807742, 45.807733, 45.807794, 45.807800]	# mali cetverokut (7x7 m)
-		#longitude = [15.966094, 15.966196, 15.966208, 15.966114]
 		if coord_sys_text == 'WGS84':
 			longitude = x
 			latitude = y
-			#resp = self.request_geolib_service(latitude, longitude, latitude[0], longitude[0])
-			#resp = self.request_geolib_service(latitude, longitude, 45.813988, 16.038427)
-			#resp = self.request_geolib_service(latitude, longitude, 45.813993, 16.038573)
-			self.home_position_global_position[self.selected_UAV].latitude = 45.813988
-			self.home_position_global_position[self.selected_UAV].longitude = 16.038427
-			self.home_position_global_position[self.selected_UAV].altitude = 120
+			self.home_position_global_position[self.selected_UAV].latitude = 45.813988		#use for Borongaj_Building_1_WGS dataset
+			self.home_position_global_position[self.selected_UAV].longitude = 16.038427		#use for Borongaj_Building_1_WGS dataset
+			self.home_position_global_position[self.selected_UAV].altitude = 120			#use for Borongaj_Building_1_WGS dataset
 			print(self.home_position_global_position[self.selected_UAV].latitude)
 			print(self.home_position_global_position[self.selected_UAV].longitude)
-			#resp = self.request_geolib_service(latitude, longitude, self.home_position_global_position[self.selected_UAV].latitude, self.home_position_global_position[self.selected_UAV].longitude)
 			resp = self.request_geolib_service(latitude, longitude, self.home_position_global_position[self.selected_UAV].latitude, self.home_position_global_position[self.selected_UAV].longitude, self.home_position_global_position[self.selected_UAV].altitude)
 			x = resp.x
 			y = resp.y
-			plotx = []; ploty = []
-			plotx = list(x)
-			ploty = list(y)
+			b_plotx = []
+			b_ploty = []
+			b_plotx = list(x)
+			b_ploty = list(y)
 
 		resp = self.request_generate_trajectoy_service(x, y, height, dist, res, res_building_points, res_height)
 		traj_wp_x = [self.trajectory_ref_x_cur[self.selected_UAV]] + [(self.trajectory_ref_x_cur[self.selected_UAV] + resp.traj_x[0])/2] + list(resp.traj_x)
@@ -130,67 +126,11 @@ class RequestTrajectory():
 		traj_wp_yaw = [self.trajectory_ref_w_cur[self.selected_UAV]] + [resp.traj_yaw[0]] + list(resp.traj_yaw)
 		print(resp.traj_x[0])
 
-		#traj_wp_x = [self.trajectory_ref_x_cur[self.selected_UAV]] + list(resp.traj_x)
-		#traj_wp_y = [self.trajectory_ref_y_cur[self.selected_UAV]] + list(resp.traj_y)
-		#traj_wp_z = [self.trajectory_ref_z_cur[self.selected_UAV]] + list(resp.traj_z)
-		#traj_wp_yaw = [self.trajectory_ref_w_cur[self.selected_UAV]] + list(resp.traj_yaw)
-
-		#traj_wp_x = list(resp.traj_x)
-		#traj_wp_y = list(resp.traj_y)
-		#traj_wp_z = list(resp.traj_z)
-		#traj_wp_yaw = list(resp.traj_yaw)
-		#plotx = []; ploty = []
-		#for i in range(len(traj_wp_yaw)):
-		#	plotx.append(i)
-		#	ploty.append(traj_wp_yaw[i])
-		#plt.plot(plotx, ploty, 'g.')
-		#plt.show()
-
-
-
 		traj_wp_yaw = self.fix_angle_discontinuities(traj_wp_yaw)
 		
 		with open(wp_file_path, 'w') as f:
 			for i in range(len(traj_wp_x)):
 				f.write("%d,%f,%f,%f,%f\n" % (i+1, traj_wp_x[i], traj_wp_y[i], traj_wp_z[i], traj_wp_yaw[i]))
-
-	#/_______________________________________________________________
-
-	#mission_wp_pub = rospy.Publisher('MissionfromGUI', MissionWP, queue_size=10)
-	#msgMissionWP = MissionWP()
-	#msgMissionWP.selectedUAV = self.selected_UAV
-	#msgMissionWP.numberofWPs = len(traj_wp_x)
-		#for i in range(0, len(traj_wp_x)):
-	#	msgMissionWP.wpNumber.append(i)
-	#	msgMissionWP.wpX.append(traj_wp_x[i])
-	#	msgMissionWP.wpY.append(traj_wp_y[i])
-	#	msgMissionWP.wpZ.append(traj_wp_z[i])
-	#	msgMissionWP.wpW.append(traj_wp_yaw[i])
-	#	msgMissionWP.wpLT.append(0)	
-	#mission_wp_pub.publish(msgMissionWP)
-
-
-	#mission_start_pub = rospy.Publisher('MissionStartStop', MissionStartStop, queue_size=10)
-	#msgMissionStart = MissionStartStop()
-	#msgMissionStart.selectedUAV = self.selected_UAV
-	#msgMissionStart.isActiveFlag = True
-	#mission_start_pub.publish(msgMissionStart)
-
-	#/__________________________________________________________________________________________
-
-		#plotx = []; ploty = []
-		#for i in range(len(traj_wp_yaw)):
-		#	plotx.append(traj_wp_x[i] + cos(traj_wp_yaw[i]))
-		#	ploty.append(traj_wp_y[i] + sin(traj_wp_yaw[i]))
-		#plt.plot(plotx, ploty, 'r.')
-		#plt.show()
-
-		#plotx = []; ploty = []
-		#for i in range(len(traj_wp_yaw)):
-		#	plotx.append(i)
-		#	ploty.append(traj_wp_yaw[i])
-		#plt.plot(plotx, ploty, 'r.')
-		#plt.show()
 	
 		# Create a service request which will be filled with waypoints
 		request = GenerateTrajectoryRequest()
@@ -226,13 +166,18 @@ class RequestTrajectory():
 		# Request the trajectory
 		response = self.request_trajectory_service(request)
 
-		#plotx = []
-		#ploty = []
-		for i in range(len(response.trajectory.points)):
-			plotx.append(response.trajectory.points[i].positions[0])
-			ploty.append(response.trajectory.points[i].positions[1])
-		plt.plot(plotx,ploty, 'b.')
-		plt.show()
+		plotx = []
+		ploty = []
+		if plot_flag:
+			for i in range(len(response.trajectory.points)):
+				plotx.append(response.trajectory.points[i].positions[0])
+				ploty.append(response.trajectory.points[i].positions[1])
+			msgPlotData = PlotData()
+			msgPlotData.plot_x = plotx
+			msgPlotData.plot_y = ploty
+			msgPlotData.b_plot_x = b_plotx
+			msgPlotData.b_plot_y = b_ploty	
+			self.plot_data_pub.publish(msgPlotData)
 
 		# Response will have trajectory and bool variable success. If for some
 		# reason the trajectory was not able to be planned or the configuration
@@ -242,12 +187,8 @@ class RequestTrajectory():
 		joint_trajectory = response.trajectory
 		multi_dof_trajectory_data = MultiDOFJointTrajectory()
 		multi_dof_trajectory_data = self.JointTrajectory2MultiDofTrajectory(joint_trajectory)
-	#print(multi_dof_trajectory_data)
-		print("Sending trajectory")
-		#trajectory_pub.publish(joint_trajectory)
 		trajectory_ready_status = True
-	#Publishing multi_dof_trajectory
-	#multi_dof_traj_pub = rospy.Publisher(self.UAV_name+'_sim'+str(self.selected_UAV)+'/command/trajectory', MultiDOFJointTrajectory, queue_size=10)
+
 
 		return multi_dof_trajectory_data		
 

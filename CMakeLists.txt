@@ -72,6 +72,10 @@ endif()
    BatteryStatus.msg
    RCchannelData.msg
    SelectedUAV.msg
+   PlotData.msg
+   TrajectoryParametersGUI.msg
+   TrajectoryParametersBuilding.msg
+   BuildingTrajectoryStatus.msg
  )
 
 ## Generate services in the 'srv' folder
