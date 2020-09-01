@@ -59,8 +59,10 @@ class MapApp(threading.Thread):
         self.UAVblueLongLabel = self.builder.get_object('uav_blue_long_label')
         self.UAVsizeSpinButton = self.builder.get_object('uav_icon_size_spinbutton')
         self.markerSizeSpinButton = self.builder.get_object('marker_size_spinbutton')
+        self.trajectorySizeSpinButton = self.builder.get_object('trajectory_marker_size_spinbutton')
         self.markerColorButton = self.builder.get_object('marker_color_colorbutton')
         self.polygonColorButton = self.builder.get_object('polygon_color_colorbutton')
+        self.trajectoryColorButton = self.builder.get_object('trajectory_colorbutton')
         self.polygonOpacityAdjustment = self.builder.get_object('polygon_opacity_adjustment')
         self.centerOfRotationLabel = self.builder.get_object('center_of_rotation_label')
         self.centerOfRotationCombobox = self.builder.get_object('center_of_rotation_combobox')
@@ -94,8 +96,11 @@ class MapApp(threading.Thread):
         self.markerColorHex = "#{:02x}{:02x}{:02x}".format(int(rgba.red*255), int(rgba.green*255), int(rgba.blue*255))
         rgba = self.polygonColorButton.get_rgba()
         self.polygonColorHex = "#{:02x}{:02x}{:02x}".format(int(rgba.red*255), int(rgba.green*255), int(rgba.blue*255))
+        rgba = self.trajectoryColorButton.get_rgba()
+        self.trajectoryColorHex = "#{:02x}{:02x}{:02x}".format(int(rgba.red*255), int(rgba.green*255), int(rgba.blue*255))
         self.markerColorButton.connect('notify::color', self.onMarkerColorChange)
         self.polygonColorButton.connect('notify::color', self.onPolygonColorChange)
+        self.trajectoryColorButton.connect('notify::color', self.onTrajectoryColorChange)
 
         styleProvider = Gtk.CssProvider()
         styleProvider.load_from_data('''
@@ -116,9 +121,10 @@ class MapApp(threading.Thread):
 #       /* ROS */
         self.UAV_names = ["UAV", "red", "blue", "yellow"]
         rospy.init_node('MultiUAV_GUI_Map_Node')
-        rospy.Subscriber("red/mavros/global_position/global", NavSatFix, self.GlobalOdometryCallback, callback_args="red")
-        rospy.Subscriber("blue/mavros/global_position/global", NavSatFix, self.GlobalOdometryCallback, callback_args="green")
-        rospy.Subscriber("yellow/mavros/global_position/global", NavSatFix, self.GlobalOdometryCallback, callback_args="blue")
+        rospy.Subscriber("red/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="red")
+        rospy.Subscriber("blue/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="green")
+        rospy.Subscriber("yellow/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="blue")
+        # rospy.Subscriber("", coordinates_global, self.trajectory_callback)
         self.building_points_pub = rospy.Publisher("BuildingPoints", GeoPath, queue_size=10)
 
 #       /* Gmaps and WebKit2 */
@@ -128,6 +134,7 @@ class MapApp(threading.Thread):
         self.coords = []
         self.adjustedCoords = []
         self.customCoords = []
+        self.trajectory_coords = []
         self.phi0 = 0; self.R = 6370000 # earth radius
         self.v_translate = [0, 0]; self.alpha_rotate = 0
 
@@ -168,8 +175,27 @@ class MapApp(threading.Thread):
             self.jsWrapper.execute()
 
 #   /* ROS */
-    def GlobalOdometryCallback(self, data, UAV):
+    def global_odometry_callback(self, data, UAV):
 		self.set_UAV_position(UAV, [data.longitude, data.latitude])
+
+    def trajectory_callback(self, data):
+        self.trajectory_coords = []
+        for i in range(len(data.latitude)):
+            self.trajectory_coords.append([data.longitude[i], data.latitude[i]])
+        
+        angles = []
+        phi0 = self.trajectory_coords[0][1] * pi/180
+        for i in range(len(self.trajectory_coords-1)):
+            x = self.R*self.trajectory_coords[i][0]*pi/180*cos(phi0)
+            y = self.R*self.trajectory_coords[i][1]*pi/180
+            x_next = self.R*self.trajectory_coords[i+1][0]*pi/180*cos(phi0)
+            y_next = self.R*self.trajectory_coords[i][1]*pi/180
+            alpha = atan2(y_next, x_next) - atan2(y, x)
+            angles.append(alpha)
+        angles.append(alpha)
+
+        self.jsWrapper.add_markers_trajectory(self.trajectory_coords, angles)
+        self.jsWrapper.execute()
 
     def ROSSendBuildingPoints(self, coords):
         geoPath = GeoPath()
@@ -606,6 +632,17 @@ class MapApp(threading.Thread):
     def onPolygonOpacityChange(self, ranger):
         if self.activeParcelTreeIter is not None:
             self.jsWrapper.set_polygon_opacity(ranger.get_value())
+            self.jsWrapper.execute()
+
+    def onTrajectoryMarkerSizeChange(self, spinButton):
+        self.jsWrapper.set_trajectory_marker_size(spinButton.get_value())
+        self.jsWrapper.execute()
+
+    def onTrajectoryColorChange(self, colorButton, *args):
+        rgba = colorButton.get_rgba()
+        self.markerColorHex = "#{:02x}{:02x}{:02x}".format(int(rgba.red*255), int(rgba.green*255), int(rgba.blue*255))
+        if self.trajectory_coords:
+            self.jsWrapper.set_trajectory_marker_color(self.markerColorHex)
             self.jsWrapper.execute()
 
     def onResetTemplate(self, button):

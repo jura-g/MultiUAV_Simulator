@@ -62,6 +62,7 @@ class MapHTMLgenerator():
         f.write('<script type="text/javascript">\n')
         f.write('\tvar markers = [];\n')
         f.write('\tvar markers_custom = [];\n')
+        f.write('\tvar markers_trajectory = [];\n')
         f.write('\tvar markers_uav = {};\n')
         f.write('\tvar polygon;\n')
         f.write('\tvar map;\n\n')
@@ -102,7 +103,7 @@ class GoogleMapsJSWrapper:
                 self.js_code += "var title = 'Marker%d';\n" % (i+1)
             else:
                 self.js_code += "var title = '%s';\n" % title
-            self.js_code += "var latlng = new google.maps.LatLng(%f, %f);\n" % (coords[i][1], coords[i][0])            
+            self.js_code += "var latlng = new google.maps.LatLng(%f, %f);\n" % (coords[i][1], coords[i][0])
             self.js_code += \
                 '''
                 var marker = new google.maps.Marker({
@@ -290,6 +291,33 @@ class GoogleMapsJSWrapper:
             document.title = JSON.stringify(titleJSON);
             '''
 
+
+    def add_markers_trajectory(self, coords, angles, color="red", size=1.0):
+        self.js_code += "var color = '%s';\n" % color
+        self.js_code += "var size = %f;\n" % size
+        for i in range(len(coords)):
+            self.js_code += "var latlng = new google.maps.LatLng(%f, %f);\n" % (coords[i][1], coords[i][0])
+            self.js_code += "var alpha = %f;\n" % angles[i]
+            self.js_code += \
+                    '''
+                    var marker = new google.maps.Marker({
+                        title: "UAV trajectory",
+                        icon: {
+                            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                            scale: 4 * size,
+                            fillColor: color,
+                            fillOpacity: 1.0,
+                            strokeWeight: 0,
+                            rotation: alpha
+                        },
+                        position: latlng,
+                        draggable: false,
+                        zIndex: 15
+                    });
+                    marker.setMap(map);
+                    markers_trajectory.push(marker);
+                '''
+
     
     def add_marker_rotation_listener(self, centerOfRotationMarkerID):
         self.js_code += \
@@ -447,6 +475,18 @@ class GoogleMapsJSWrapper:
                 marker.setIcon(icon);
             }
             '''
+
+    def set_trajectory_marker_size(self, size):
+        self.js_code += "var size = %f;\n" % size
+        self.js_code += \
+            '''
+            for(var i in markers_trajectory){
+                marker = markers_trajectory[i];
+                var icon = marker.getIcon();
+                icon.scale = 4 * size;
+                marker.setIcon(icon);
+            }
+            '''
     
     def set_marker_color(self, color):
         self.js_code += "var color = '%s';\n" % color
@@ -454,6 +494,18 @@ class GoogleMapsJSWrapper:
             '''
             for(var i in markers){
                 marker = markers[i];
+                var icon = marker.getIcon();
+                icon.fillColor = color;
+                marker.setIcon(icon);
+            }
+            '''
+
+    def set_trajectory_marker_color(self, color):
+        self.js_code += "var color = '%s';\n" % color
+        self.js_code += \
+            '''
+            for(var i in markers_trajectory){
+                marker = markers_trajectory[i];
                 var icon = marker.getIcon();
                 icon.fillColor = color;
                 marker.setIcon(icon);
