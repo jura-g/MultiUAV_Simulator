@@ -118,15 +118,6 @@ class MapApp(threading.Thread):
         self.activeParcelTreeIter = None
 
 
-#       /* ROS */
-        self.UAV_names = ["UAV", "red", "blue", "yellow"]
-        rospy.init_node('MultiUAV_GUI_Map_Node')
-        rospy.Subscriber("red/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="red")
-        rospy.Subscriber("blue/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="green")
-        rospy.Subscriber("yellow/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="blue")
-        # rospy.Subscriber("", coordinates_global, self.trajectory_callback)
-        self.building_points_pub = rospy.Publisher("BuildingPoints", GeoPath, queue_size=10)
-
 #       /* Gmaps and WebKit2 */
         self.mapHolder = WebKit2.WebView()
         self.jsWrapper = GoogleMapsJSWrapper(self.mapHolder)
@@ -137,6 +128,12 @@ class MapApp(threading.Thread):
         self.trajectory_coords = []
         self.phi0 = 0; self.R = 6370000 # earth radius
         self.v_translate = [0, 0]; self.alpha_rotate = 0
+
+        # add UAVs
+        self.jsWrapper.add_UAV('red')
+        self.jsWrapper.add_UAV('green')
+        self.jsWrapper.add_UAV('blue')
+        self.jsWrapper.execute()
 
         # generate map.html
         HTMLgenerator = MapHTMLgenerator(0, 0, 1, apikey='')
@@ -160,6 +157,15 @@ class MapApp(threading.Thread):
         self.mapBox = self.builder.get_object('map_box')
         self.mapBox.pack_start(self.mapHolder, True, True, 0)
 
+#       /* ROS */
+        self.UAV_names = ["UAV", "red", "blue", "yellow"]
+        rospy.init_node('MultiUAV_GUI_Map_Node')
+        rospy.Subscriber("red/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="red")
+        rospy.Subscriber("blue/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="green")
+        rospy.Subscriber("yellow/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="blue")
+        # rospy.Subscriber("", coordinates_global, self.trajectory_callback)
+        # self.building_points_pub = rospy.Publisher("BuildingPoints", GeoPath, queue_size=10)
+
         self.mapHolder.show_all()
 
         self.window.connect('delete-event', self.destroy) 
@@ -169,10 +175,7 @@ class MapApp(threading.Thread):
 
     def load_finished(self, webview, event):
         if event == WebKit2.LoadEvent.FINISHED:
-            self.jsWrapper.add_UAV('red')
-            self.jsWrapper.add_UAV('green')
-            self.jsWrapper.add_UAV('blue')
-            self.jsWrapper.execute()
+            print("Map loaded")
 
 #   /* ROS */
     def global_odometry_callback(self, data, UAV):
@@ -284,7 +287,7 @@ class MapApp(threading.Thread):
 
     def apply_adjustment(self, coords):
         if self.activeParcelTreeIter is None:
-            return
+            return coords
         parcelID = self.parcelListStore[self.activeParcelTreeIter][0]
         markerCoords = self.coords[parcelID]
 
