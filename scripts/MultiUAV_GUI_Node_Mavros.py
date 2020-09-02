@@ -44,13 +44,20 @@ from std_srvs.srv import Empty
 
 import uinput, time
 import pygame, sys, os
+import subprocess
+
 from pygame.locals import *
 
 import threading
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk, GLib, GObject
+gi.require_version('WebKit2', '4.0')
+from gi.repository import Gtk, Gdk, GLib, GObject, GdkPixbuf, WebKit2
+
+# import local files
+from GMLParser import GMLParser
+from GoogleMapsWebWrapper import GoogleMapsJSWrapper, MapHTMLgenerator
 
 import matplotlib.pyplot as plt
 
@@ -1346,7 +1353,8 @@ class app_main:
 			self.isBuildingTrajectoryReady[self.selected_UAV] = False
 
 	def on_buttonbMAP_PLANNER_clicked(self, button):
-		execfile(roslib.packages.get_pkg_dir('graupner_serial')+"/scripts/map_glade.py")
+		#execfile(roslib.packages.get_pkg_dir('graupner_serial')+"/scripts/map_glade.py")
+		p = subprocess.Popen([sys.executable, roslib.packages.get_pkg_dir('graupner_serial')+"/scripts/map_glade.py"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 	
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------#

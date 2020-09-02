@@ -7,7 +7,7 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('WebKit2', '4.0')
 from gi.repository import Gtk, GdkPixbuf, Gdk, GLib, WebKit2
 
-from time import sleep
+import time
 import threading
 import json
 import os.path
@@ -19,6 +19,8 @@ import rospy
 import roslaunch
 from sensor_msgs.msg import NavSatFix
 from geographic_msgs.msg import GeoPoint, GeoPose, GeoPoseStamped, GeoPath
+
+from graupner_serial.msg import DesiredTrajectory, MissionWP, MissionStartStop, BatteryStatus, SelectedUAV, RCchannelData, PlotData
 
 # import local files
 from GMLParser import GMLParser
@@ -162,18 +164,21 @@ class MapApp(threading.Thread):
 #       /* ROS */
         self.UAV_names = ["UAV", "red", "blue", "yellow"]
         rospy.init_node('MultiUAV_GUI_Map_Node')
+        rospy.Subscriber("PlotData", PlotData, self.PlotCallback)
         rospy.Subscriber("red/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="red")
-        rospy.Subscriber("blue/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="green")
-        rospy.Subscriber("yellow/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="blue")
+        #rospy.Subscriber("blue/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="green")
+        #rospy.Subscriber("yellow/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="blue")
         # rospy.Subscriber("", coordinates_global, self.trajectory_callback)
         # self.building_points_pub = rospy.Publisher("BuildingPoints", GeoPath, queue_size=10)
+        time.sleep(0.5)
 
         self.mapHolder.show_all()
 
         self.window.connect('delete-event', self.destroy) 
         self.window.show_all() 
 
-
+    def PlotCallback(self, data):
+        print("22")
 
     def load_finished(self, webview, event):
         if event == WebKit2.LoadEvent.FINISHED:
@@ -181,7 +186,8 @@ class MapApp(threading.Thread):
 
 #   /* ROS */
     def global_odometry_callback(self, data, UAV):
-		self.set_UAV_position(UAV, [data.longitude, data.latitude])
+        print("11")
+        self.set_UAV_position(UAV, [data.longitude, data.latitude])
 
     def trajectory_callback(self, data):
         self.trajectory_coords = []
@@ -215,7 +221,7 @@ class MapApp(threading.Thread):
     def set_UAV_position(self, color, coords):
         coords = self.apply_adjustment(coords)
         if color == 'red':
-            self.jsWrapper.set_UAV_position('red', coords)
+            #self.jsWrapper.set_UAV_position('red', coords)
             self.UAVredLatLabel.set_text("%14.10f" % coords[1])
             self.UAVredLongLabel.set_text("%14.10f" % coords[0])
         elif color == 'green':
@@ -229,7 +235,7 @@ class MapApp(threading.Thread):
         else:
             print("ERROR: MapApp.set_UAV_position: Referencing non existing UAV")
             return
-        self.jsWrapper.execute()
+        #self.jsWrapper.execute()
 
 
     def js2py(self, webview, event):
@@ -729,12 +735,15 @@ class MapApp(threading.Thread):
         Gtk.main_quit(*args)
 
     def run(self):
-        Gtk.main()
+        #print("1")
+        #Gtk.main()
+        return 1
 
 
 if __name__ == "__main__":
     app = MapApp()
     # app.start()
+    #GLib.timeout_add(100, app.run)
     Gtk.main()
     # while(app.is_alive()):
         # sleep(1)
