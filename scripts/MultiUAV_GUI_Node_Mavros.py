@@ -1355,6 +1355,8 @@ class app_main:
 	def on_buttonbMAP_PLANNER_clicked(self, button):
 		#execfile(roslib.packages.get_pkg_dir('graupner_serial')+"/scripts/map_glade.py")
 		p = subprocess.Popen([sys.executable, roslib.packages.get_pkg_dir('graupner_serial')+"/scripts/map_glade.py"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		#process = subprocess.Popen([sys.executable, roslib.packages.get_pkg_dir('graupner_serial')+"/scripts/map_glade.py"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		#stdout, stderr = process.communicate()
 	
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------#
