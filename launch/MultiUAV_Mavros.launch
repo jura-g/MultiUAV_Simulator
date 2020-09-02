@@ -5,5 +5,5 @@
     <node name="TrajectoryPlanningServiceNode" pkg="graupner_serial" type="TrajectoryPlanningServiceNode_Carrot.py" />
     <node name="TrajectoryFromGUIServiceNode" pkg="graupner_serial" type="TrajectoryFromGUIServiceNode_Carrot.py" />
     <node name="MissionControlNode" pkg="graupner_serial" type="MissionControlNode_Mavros.py" />
-    <node name="TrajectoryGeneratorNode" pkg="graupner_serial" type="TrajectoryGenerator.py" />
+    <node name="TrajectoryGeneratorNode" pkg="graupner_serial" type="TrajectoryGeneratorNode.py" />
 </launch>

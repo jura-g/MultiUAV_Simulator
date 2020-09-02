@@ -380,7 +380,9 @@ class app_main:
 		self.bREMOVE_BUILDING_POINT = self.builder.get_object('buttonREMOVE_BUILDING_POINT')
 		self.bREMOVE_BUILDING_POINT.connect("clicked", self.on_buttonREMOVE_BUILDING_POINT_clicked)
 		self.bEXECUTE_TRAJECTORY = self.builder.get_object('buttonEXECUTE_TRAJECTORY')
-		self.bEXECUTE_TRAJECTORY.connect("clicked", self.on_buttonEXECUTE_TRAJECTORY_clicked) 
+		self.bEXECUTE_TRAJECTORY.connect("clicked", self.on_buttonEXECUTE_TRAJECTORY_clicked)
+		self.bMAP_PLANNER = self.builder.get_object('buttonMAP_PLANNER')
+		self.bMAP_PLANNER.connect("clicked", self.on_buttonbMAP_PLANNER_clicked)  
 
 
 		#/* radiobuttons */
@@ -1342,6 +1344,9 @@ class app_main:
 			print("11")
 
 			self.isBuildingTrajectoryReady[self.selected_UAV] = False
+
+	def on_buttonbMAP_PLANNER_clicked(self, button):
+		execfile(roslib.packages.get_pkg_dir('graupner_serial')+"/scripts/map_glade.py")
 	
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------#
