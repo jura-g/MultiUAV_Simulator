@@ -29,7 +29,7 @@ from GoogleMapsWebWrapper import GoogleMapsJSWrapper, MapHTMLgenerator
 # All points are in the form of (Longitude, Latitude) !!!!!
 class MapApp(threading.Thread):
     def __init__(self):
-        threading.Thread.__init__(self)
+        #threading.Thread.__init__(self)
 
 #       /* GTK */
         self.builder = Gtk.Builder()
@@ -743,7 +743,7 @@ class MapApp(threading.Thread):
 if __name__ == "__main__":
     app = MapApp()
     # app.start()
-    #GLib.timeout_add(100, app.run)
+    GLib.timeout_add(100, app.run)
     Gtk.main()
     # while(app.is_alive()):
         # sleep(1)

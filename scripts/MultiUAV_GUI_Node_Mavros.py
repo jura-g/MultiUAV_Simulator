@@ -52,12 +52,12 @@ import threading
 
 import gi
 gi.require_version('Gtk', '3.0')
-gi.require_version('WebKit2', '4.0')
-from gi.repository import Gtk, Gdk, GLib, GObject, GdkPixbuf, WebKit2
+#gi.require_version('WebKit2', '4.0')
+from gi.repository import Gtk, Gdk, GLib, GObject#, GdkPixbuf, WebKit2
 
 # import local files
 from GMLParser import GMLParser
-from GoogleMapsWebWrapper import GoogleMapsJSWrapper, MapHTMLgenerator
+#from GoogleMapsWebWrapper import GoogleMapsJSWrapper, MapHTMLgenerator
 
 import matplotlib.pyplot as plt
 
