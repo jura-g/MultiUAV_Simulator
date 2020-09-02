@@ -14,7 +14,9 @@ import os.path
 
 from math import pi, sin, cos, atan2
 
+import roslib; roslib.load_manifest('graupner_serial')
 import rospy
+import roslaunch
 from sensor_msgs.msg import NavSatFix
 from geographic_msgs.msg import GeoPoint, GeoPose, GeoPoseStamped, GeoPath
 
@@ -29,7 +31,7 @@ class MapApp(threading.Thread):
 
 #       /* GTK */
         self.builder = Gtk.Builder()
-        self.builder.add_from_file('map.glade')
+        self.builder.add_from_file(roslib.packages.get_pkg_dir('graupner_serial')+'/scripts/map.glade')
         self.window = self.builder.get_object('map_window')
         self.builder.connect_signals(self)
 
@@ -82,13 +84,13 @@ class MapApp(threading.Thread):
         # scale and add images
         height = -1
         width = 30
-        imgPath = os.path.dirname(os.path.abspath(__file__)) + "/resources/UAV-red.svg"
+        imgPath = roslib.packages.get_pkg_dir('graupner_serial')+"/scripts/resources/UAV-red.svg"
         pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(imgPath, width, height, True)
         self.UAVredImg.set_from_pixbuf(pixbuf)
-        imgPath = os.path.dirname(os.path.abspath(__file__)) + "/resources/UAV-green.svg"
+        imgPath = roslib.packages.get_pkg_dir('graupner_serial')+"/scripts/resources/UAV-green.svg"
         pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(imgPath, width, height, True)
         self.UAVgreenImg.set_from_pixbuf(pixbuf)
-        imgPath = os.path.dirname(os.path.abspath(__file__)) + "/resources/UAV-blue.svg"
+        imgPath = roslib.packages.get_pkg_dir('graupner_serial')+"/scripts/resources/UAV-blue.svg"
         pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(imgPath, width, height, True)
         self.UAVblueImg.set_from_pixbuf(pixbuf)
 
