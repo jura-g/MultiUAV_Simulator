@@ -42,6 +42,7 @@ class MapApp(threading.Thread):
         self.parcelEntry = self.builder.get_object('dropdown_parcels_entry')
         self.parcelListStore = self.builder.get_object('dropdown_parcels_liststore')
         self.parcelComboBox = self.builder.get_object('parcel_combobox')
+        self.sendBuildingMarkersButton = self.builder.get_object('send_building_markers_button')
         self.mouseLatLabel = self.builder.get_object('mouse_latitude_label')
         self.mouseLongLabel = self.builder.get_object('mouse_longitude_label')
         self.mouseCoordSystemLabel = self.builder.get_object('coordinate_system_label')
@@ -53,6 +54,7 @@ class MapApp(threading.Thread):
         self.mouseCoordSystemLabelCustom = self.builder.get_object('coordinate_system_label_custom')
         self.hideMarkersCheckbox = self.builder.get_object('hideMarkers_cb')
         self.hidePolygonCheckbox = self.builder.get_object('hidePolygon_cb')
+        self.hideTrajectoryCheckBox = self.builder.get_object('hide_trajectory_cb')
         self.UAVredImg = self.builder.get_object('uav_red_img')
         self.UAVgreenImg = self.builder.get_object('uav_green_img')
         self.UAVblueImg = self.builder.get_object('uav_blue_img')
@@ -164,10 +166,10 @@ class MapApp(threading.Thread):
 
 #       /* ROS */
         rospy.init_node('MultiUAV_GUI_Map_Node')
-        rospy.Subscriber("red/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="red")
-        #rospy.Subscriber("blue/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="green")
-        #rospy.Subscriber("yellow/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="blue")
-        # rospy.Subscriber("", coordinates_global, self.trajectory_callback)
+        rospy.Subscriber("red/mavros/global_position/global", NavSatFix, self.ROS_global_odometry_callback, callback_args="red")
+        rospy.Subscriber("blue/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="green")
+        rospy.Subscriber("yellow/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="blue")
+        # rospy.Subscriber("", coordinates_global, self.ROS_trajectory_callback)
         # rospy.Subscriber("PlotData", PlotData, self.PlotCallback)
         self.building_points_pub = rospy.Publisher("BuildingPoints", BuildingPoints, queue_size=10)
         time.sleep(0.5)
@@ -177,8 +179,6 @@ class MapApp(threading.Thread):
         self.window.connect('delete-event', self.destroy) 
         self.window.show_all() 
 
-    def PlotCallback(self, data):
-        print("22")
 
     def load_finished(self, webview, event):
         if event == WebKit2.LoadEvent.FINISHED:
@@ -190,15 +190,16 @@ class MapApp(threading.Thread):
             self.jsWrapper.execute()
             print("Map loaded")
 
+
 #   /* ROS */
-    def global_odometry_callback(self, data, UAV):
+    def ROS_global_odometry_callback(self, data, UAV):
         # self.set_UAV_position(UAV, [data.longitude, data.latitude])
         self.UAVpositions[UAV] = [data.longitude, data.latitude]
 
-    def trajectory_callback(self, data):
+    def ROS_trajectory_callback(self, data):
         self.trajectory_coords = []
         for i in range(len(data.latitude)):
-            self.trajectory_coords.append([data.longitude[i], data.latitude[i]])
+            self.trajectory_coords.append([data.plot_longitude[i], data.plot_latitude[i]])
         
         angles = []
         phi0 = self.trajectory_coords[0][1] * pi/180
@@ -214,7 +215,7 @@ class MapApp(threading.Thread):
         self.jsWrapper.add_markers_trajectory(self.trajectory_coords, angles)
         self.jsWrapper.execute()
 
-    def ROSSendBuildingPoints(self, coords):
+    def ROS_send_building_points(self, coords):
         longitudes = []; latitudes = []; pointIDs = []
         for i in range(len(coords)):
             pointIDs.append(i)
@@ -370,7 +371,6 @@ class MapApp(threading.Thread):
         self.jsWrapper.add_polygon(coords, color=self.polygonColorHex, opacity=self.polygonOpacityAdjustment.get_value())
         self.jsWrapper.execute()
 
-        self.ROSSendBuildingPoints(coords[:-1])
 
     
 ##########################   GTK Handlers  ############################
@@ -411,7 +411,43 @@ class MapApp(threading.Thread):
         self.reset_config([])
         self.activeParcelTreeIter = None
 
-    
+
+    def onMarkerComboChange(self, markerCombobox):
+        if markerCombobox.get_active_iter() is None or not self.polygonRotateCheckButton.get_active():
+            return
+        self.jsWrapper.remove_marker_rotation_listener()
+        treeModel = markerCombobox.get_model()
+        treeIter = markerCombobox.get_active_iter()
+        centerOfRotationMarkerID = treeModel[treeIter][0]
+        self.jsWrapper.add_marker_rotation_listener(centerOfRotationMarkerID)
+        self.jsWrapper.execute()
+
+
+    def onHideMarkersCheckboxToggle(self, cbButton):
+        if self.activeParcelTreeIter is None:
+            cbButton.set_active(False)
+        else:
+            self.jsWrapper.hide_markers(cbButton.get_active())
+            self.jsWrapper.execute()
+
+    def onHidePolygonCheckboxToggle(self, cbButton):
+        if self.activeParcelTreeIter is None:
+            cbButton.set_active(False)
+        else:
+            self.jsWrapper.hide_polygon(cbButton.get_active())
+            self.jsWrapper.execute()
+
+    def onHideTrajectory(self, cbButton):
+        print("not implemented")
+
+    def onSendBuildingMarkers(self, button):
+        assert(self.activeParcelTreeIter is not None)
+        parcelID = self.parcelListStore[self.activeParcelTreeIter][0]
+        coords = self.coords[parcelID]
+        self.ROS_send_building_points(coords[:-1])
+        
+
+#   /* Fix Markers */
     def onPolygonDragToggle(self, cbButton):
         if self.activeParcelTreeIter is None:
             cbButton.set_active(False)
@@ -438,36 +474,10 @@ class MapApp(threading.Thread):
             self.jsWrapper.execute()
 
 
-    def onMarkerComboChange(self, markerCombobox):
-        if markerCombobox.get_active_iter() is None or not self.polygonRotateCheckButton.get_active():
-            return
-        self.jsWrapper.remove_marker_rotation_listener()
-        treeModel = markerCombobox.get_model()
-        treeIter = markerCombobox.get_active_iter()
-        centerOfRotationMarkerID = treeModel[treeIter][0]
-        self.jsWrapper.add_marker_rotation_listener(centerOfRotationMarkerID)
-        self.jsWrapper.execute()
-        
-
-#   /* Fix Markers */
     def onFitBuildingPlanResetClicked(self, button):
         if self.activeParcelTreeIter is not None:
             self.parcel_changed()
 
-
-    def onHideMarkersCheckboxToggle(self, cbButton):
-        if self.activeParcelTreeIter is None:
-            cbButton.set_active(False)
-        else:
-            self.jsWrapper.hide_markers(cbButton.get_active())
-            self.jsWrapper.execute()
-
-    def onHidePolygonCheckboxToggle(self, cbButton):
-        if self.activeParcelTreeIter is None:
-            cbButton.set_active(False)
-        else:
-            self.jsWrapper.hide_polygon(cbButton.get_active())
-            self.jsWrapper.execute()
 
     def onLoadConfig(self, button):
         dialog = Gtk.FileChooserDialog(
@@ -511,7 +521,7 @@ class MapApp(threading.Thread):
         self.jsWrapper.add_polygon(self.adjustedCoords, color=self.polygonColorHex, opacity=self.polygonOpacityAdjustment.get_value())
         self.jsWrapper.execute()
 
-        sleep(0.1)
+        time.sleep(0.1)
         self.v_translate = config['v_translate']
         self.alpha_rotate = config['alpha_rotate']
         self.phi0 = config['phi0']
@@ -756,7 +766,7 @@ class MapApp(threading.Thread):
 if __name__ == "__main__":
     app = MapApp()
     # app.start()
-    GLib.timeout_add(1000, app.run)
+    GLib.timeout_add(100, app.run)
     Gtk.main()
     # while(app.is_alive()):
         # sleep(1)
