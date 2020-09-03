@@ -18,9 +18,9 @@ import roslib; roslib.load_manifest('graupner_serial')
 import rospy
 import roslaunch
 from sensor_msgs.msg import NavSatFix
-from geographic_msgs.msg import GeoPoint, GeoPose, GeoPoseStamped, GeoPath
+from geographic_msgs.msg import GeoPoint
 
-from graupner_serial.msg import DesiredTrajectory, MissionWP, MissionStartStop, BatteryStatus, SelectedUAV, RCchannelData, PlotData
+from graupner_serial.msg import DesiredTrajectory, MissionWP, MissionStartStop, BatteryStatus, SelectedUAV, RCchannelData, PlotData, BuildingPoints
 
 # import local files
 from GMLParser import GMLParser
@@ -170,7 +170,7 @@ class MapApp(threading.Thread):
         #rospy.Subscriber("yellow/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="blue")
         # rospy.Subscriber("", coordinates_global, self.trajectory_callback)
         # rospy.Subscriber("PlotData", PlotData, self.PlotCallback)
-        # self.building_points_pub = rospy.Publisher("BuildingPoints", GeoPath, queue_size=10)
+        self.building_points_pub = rospy.Publisher("BuildingPoints", GeoPath, queue_size=10)
         time.sleep(0.5)
 
         self.mapHolder.show_all()
@@ -210,13 +210,16 @@ class MapApp(threading.Thread):
         self.jsWrapper.execute()
 
     def ROSSendBuildingPoints(self, coords):
-        geoPath = GeoPath()
-        geoPoseStamped = GeoPoseStamped()
-        for coord in coords:
-            geoPoseStamped.pose.position.latitude = coord[1]
-            geoPoseStamped.pose.position.longitude = coord[0]
-            geoPath.append(geoPoseStamped)
-        self.building_points_pub.publish(geoPath)
+        logitudes = []; latitudes = [], pointIDs = []
+        for i range(len(coords)):
+            pointIDs.append(i)
+            longitudes.append(coord[0])
+            latitudes.append(coord[1])
+        buildingPoints = BuildingPoints()
+        buildingPoints.pointIDs = pointIDs
+        buildingPoints.latitudes = latitudes
+        buildingPoints.longitudes = longitudes
+        self.building_points_pub.publish(buildingPoints)
     
 
     def set_UAV_position(self, color, coords):
