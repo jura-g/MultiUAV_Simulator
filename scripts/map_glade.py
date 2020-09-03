@@ -441,10 +441,10 @@ class MapApp(threading.Thread):
         print("not implemented")
 
     def onSendBuildingMarkers(self, button):
-        assert(self.activeParcelTreeIter is not None)
-        parcelID = self.parcelListStore[self.activeParcelTreeIter][0]
-        coords = self.coords[parcelID]
-        self.ROS_send_building_points(coords[:-1])
+        if self.activeParcelTreeIter is not None:
+            parcelID = self.parcelListStore[self.activeParcelTreeIter][0]
+            coords = self.coords[parcelID]
+            self.ROS_send_building_points(coords[:-1])
         
 
 #   /* Fix Markers */
