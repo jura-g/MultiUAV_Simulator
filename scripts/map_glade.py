@@ -134,6 +134,8 @@ class MapApp(threading.Thread):
         self.v_translate = [0, 0]; self.alpha_rotate = 0
 
         # add UAVs
+        self.UAVnames = ["UAV", "red", "blue", "yellow"]
+        self.UAVpositions = {}
         self.jsWrapper.add_UAV('red')
         self.jsWrapper.add_UAV('green')
         self.jsWrapper.add_UAV('blue')
@@ -162,13 +164,12 @@ class MapApp(threading.Thread):
         self.mapBox.pack_start(self.mapHolder, True, True, 0)
 
 #       /* ROS */
-        self.UAV_names = ["UAV", "red", "blue", "yellow"]
         rospy.init_node('MultiUAV_GUI_Map_Node')
-        rospy.Subscriber("PlotData", PlotData, self.PlotCallback)
         rospy.Subscriber("red/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="red")
         #rospy.Subscriber("blue/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="green")
         #rospy.Subscriber("yellow/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="blue")
         # rospy.Subscriber("", coordinates_global, self.trajectory_callback)
+        # rospy.Subscriber("PlotData", PlotData, self.PlotCallback)
         # self.building_points_pub = rospy.Publisher("BuildingPoints", GeoPath, queue_size=10)
         time.sleep(0.5)
 
@@ -186,8 +187,8 @@ class MapApp(threading.Thread):
 
 #   /* ROS */
     def global_odometry_callback(self, data, UAV):
-        print("11")
-        self.set_UAV_position(UAV, [data.longitude, data.latitude])
+        # self.set_UAV_position(UAV, [data.longitude, data.latitude])
+        self.UAVpositions[UAV] = [data.longitude, data.latitude]
 
     def trajectory_callback(self, data):
         self.trajectory_coords = []
@@ -735,8 +736,12 @@ class MapApp(threading.Thread):
         Gtk.main_quit(*args)
 
     def run(self):
-        #print("1")
-        #Gtk.main()
+        if 'red' in self.UAVpositions:
+            self.set_UAV_position('red', self.UAVpositions['red'])
+        if 'green' in self.UAVpositions:
+            self.set_UAV_position('green', self.UAVpositions['green'])
+        if 'blue' in self.UAVpositions:
+            self.set_UAV_position('blue', self.UAVpositions['blue'])
         return 1
 
 
