@@ -30,6 +30,7 @@ from GoogleMapsWebWrapper import GoogleMapsJSWrapper, MapHTMLgenerator
 class MapApp(threading.Thread):
     def __init__(self):
         #threading.Thread.__init__(self)
+        self.rosInit = False
 
 #       /* GTK */
         self.builder = Gtk.Builder()
@@ -132,25 +133,20 @@ class MapApp(threading.Thread):
         self.trajectory_coords = []
         self.phi0 = 0; self.R = 6370000 # earth radius
         self.v_translate = [0, 0]; self.alpha_rotate = 0
-
-        # add UAVs
         self.UAVnames = ["UAV", "red", "blue", "yellow"]
         self.UAVpositions = {}
-        self.jsWrapper.add_UAV('red')
-        self.jsWrapper.add_UAV('green')
-        self.jsWrapper.add_UAV('blue')
-        self.jsWrapper.execute()
-
-        # generate map.html
-        HTMLgenerator = MapHTMLgenerator(0, 0, 1, apikey='')
-        HTMLfile = os.path.dirname(os.path.abspath(__file__)) + "/map.html"
-        HTMLgenerator.draw(HTMLfile)
+        self.js_loaded = False
 
         # print console log
         settings = self.mapHolder.get_settings()
         settings.set_enable_write_console_messages_to_stdout(True)
         settings.set_allow_universal_access_from_file_urls(True)
         self.mapHolder.set_settings(settings)
+
+        # generate map.html
+        HTMLgenerator = MapHTMLgenerator(0, 0, 1, apikey='AIzaSyD6rPVY-FLb97DdWua_O9u2nc316GsEtSw')
+        HTMLfile = os.path.dirname(os.path.abspath(__file__)) + "/map.html"
+        HTMLgenerator.draw(HTMLfile)
 
         # JS -> Python connection
         self.mapHolder.connect('notify::title', self.js2py)
@@ -159,6 +155,9 @@ class MapApp(threading.Thread):
         # mapHolder.load_html(open('map.html').read(), None) # ne radi
         # mapHolder.load_uri("http://127.0.0.1:5000")
         self.mapHolder.load_uri("file://" + HTMLfile)
+        time.sleep(2)
+        if not self.js_loaded:
+            print("WARNING: map was not successfully loaded, please restart map")
 
         self.mapBox = self.builder.get_object('map_box')
         self.mapBox.pack_start(self.mapHolder, True, True, 0)
@@ -170,7 +169,7 @@ class MapApp(threading.Thread):
         #rospy.Subscriber("yellow/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="blue")
         # rospy.Subscriber("", coordinates_global, self.trajectory_callback)
         # rospy.Subscriber("PlotData", PlotData, self.PlotCallback)
-        self.building_points_pub = rospy.Publisher("BuildingPoints", GeoPath, queue_size=10)
+        self.building_points_pub = rospy.Publisher("BuildingPoints", BuildingPoints, queue_size=10)
         time.sleep(0.5)
 
         self.mapHolder.show_all()
@@ -183,6 +182,12 @@ class MapApp(threading.Thread):
 
     def load_finished(self, webview, event):
         if event == WebKit2.LoadEvent.FINISHED:
+            self.js_loaded = True
+            #add UAVs
+            self.jsWrapper.add_UAV("red")
+            self.jsWrapper.add_UAV('green')
+            self.jsWrapper.add_UAV('blue')
+            self.jsWrapper.execute()
             print("Map loaded")
 
 #   /* ROS */
@@ -210,11 +215,11 @@ class MapApp(threading.Thread):
         self.jsWrapper.execute()
 
     def ROSSendBuildingPoints(self, coords):
-        logitudes = []; latitudes = [], pointIDs = []
-        for i range(len(coords)):
+        longitudes = []; latitudes = []; pointIDs = []
+        for i in range(len(coords)):
             pointIDs.append(i)
-            longitudes.append(coord[0])
-            latitudes.append(coord[1])
+            longitudes.append(coords[i][0])
+            latitudes.append(coords[i][1])
         buildingPoints = BuildingPoints()
         buildingPoints.pointIDs = pointIDs
         buildingPoints.latitudes = latitudes
@@ -225,7 +230,7 @@ class MapApp(threading.Thread):
     def set_UAV_position(self, color, coords):
         coords = self.apply_adjustment(coords)
         if color == 'red':
-            #self.jsWrapper.set_UAV_position('red', coords)
+            self.jsWrapper.set_UAV_position('red', coords)
             self.UAVredLatLabel.set_text("%14.10f" % coords[1])
             self.UAVredLongLabel.set_text("%14.10f" % coords[0])
         elif color == 'green':
@@ -239,7 +244,7 @@ class MapApp(threading.Thread):
         else:
             print("ERROR: MapApp.set_UAV_position: Referencing non existing UAV")
             return
-        #self.jsWrapper.execute()
+        self.jsWrapper.execute()
 
 
     def js2py(self, webview, event):
@@ -751,7 +756,7 @@ class MapApp(threading.Thread):
 if __name__ == "__main__":
     app = MapApp()
     # app.start()
-    GLib.timeout_add(100, app.run)
+    GLib.timeout_add(1000, app.run)
     Gtk.main()
     # while(app.is_alive()):
         # sleep(1)
