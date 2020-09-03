@@ -157,9 +157,7 @@ class MapApp(threading.Thread):
         # mapHolder.load_html(open('map.html').read(), None) # ne radi
         # mapHolder.load_uri("http://127.0.0.1:5000")
         self.mapHolder.load_uri("file://" + HTMLfile)
-        time.sleep(2)
-        if not self.js_loaded:
-            print("WARNING: map was not successfully loaded, please restart map")
+        # time.sleep(2)
 
         self.mapBox = self.builder.get_object('map_box')
         self.mapBox.pack_start(self.mapHolder, True, True, 0)
@@ -167,8 +165,8 @@ class MapApp(threading.Thread):
 #       /* ROS */
         rospy.init_node('MultiUAV_GUI_Map_Node')
         rospy.Subscriber("red/mavros/global_position/global", NavSatFix, self.ROS_global_odometry_callback, callback_args="red")
-        rospy.Subscriber("blue/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="green")
-        rospy.Subscriber("yellow/mavros/global_position/global", NavSatFix, self.global_odometry_callback, callback_args="blue")
+        # rospy.Subscriber("blue/mavros/global_position/global", NavSatFix, self.ROS_global_odometry_callback, callback_args="green")
+        # rospy.Subscriber("yellow/mavros/global_position/global", NavSatFix, self.ROS_global_odometry_callback, callback_args="blue")
         # rospy.Subscriber("", coordinates_global, self.ROS_trajectory_callback)
         # rospy.Subscriber("PlotData", PlotData, self.PlotCallback)
         self.building_points_pub = rospy.Publisher("BuildingPoints", BuildingPoints, queue_size=10)
@@ -754,6 +752,9 @@ class MapApp(threading.Thread):
         Gtk.main_quit(*args)
 
     def run(self):
+        if not self.js_loaded:
+            print("Warning: Map was not successfully loaded, please restart map")
+            return 1
         if 'red' in self.UAVpositions:
             self.set_UAV_position('red', self.UAVpositions['red'])
         if 'green' in self.UAVpositions:
